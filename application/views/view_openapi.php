@@ -1,2 +1,2 @@
 <?php
-require_once "static/openapi.html";
+readfile("static/openapi.html");

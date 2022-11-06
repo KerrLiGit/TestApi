@@ -7,6 +7,7 @@ class Xmysqli extends mysqli {
 		if (mysqli_connect_errno()) // check if a connection established
 			throw new exception(mysqli_connect_error(), mysqli_connect_errno());
 
+		/*
 		if (!is_null($login)) {
 			$session = $this->thread_id;
 			$stmt = $this->prepare('DELETE FROM `session` WHERE `session` = ?;');
@@ -16,12 +17,15 @@ class Xmysqli extends mysqli {
 			$stmt->bind_param("is", $session, $login);
 			$stmt->execute();
 		}
+		*/
 	}
 
 	function __destruct() {
+		/*
 		$idconn = $this->thread_id;
 		$stmt = $this->prepare('DELETE FROM `session` WHERE `session` = ?;');
 		$stmt->bind_param("i", $idconn);
 		$stmt->execute();
+		*/
 	}
 }
