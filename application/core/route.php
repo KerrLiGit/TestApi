@@ -20,6 +20,7 @@ class Route {
 
 	/*
 	 * Основной метод запуска приложения
+	 * Запрос к срверу имеет вид /controller/index/action
 	 */
 	/**
 	 * @throws Exception
@@ -27,26 +28,43 @@ class Route {
 	static function start() {
 		// контроллер и действие по умолчанию
 		$controller_name = 'Main';
+		$index = null;
 		$action_name = 'index';
+		$i = 1;
 
 		$routes = explode('/', $_SERVER['REQUEST_URI']);
 
 		// получаем имя контроллера
-		if (array_key_exists(1, $routes) && !empty($routes[1])) {
-			$controller_name = $routes[1];
+		if (array_key_exists($i, $routes) && !empty($routes[$i])) {
+			$controller_name = $routes[$i];
+			$i++;
+		}
+
+		// получаем индекс
+		if (array_key_exists($i, $routes) && !empty($routes[$i])) {
+			$index = $routes[$i];
+			$i++;
+		}
+		if (!empty($index) && !is_numeric($index)) {
+			$index = null;
+			$i--;
 		}
 
 		// получаем имя экшена
-		if (array_key_exists(2, $routes) && !empty($routes[2])) {
-			$action_name = $routes[2];
+
+		if (array_key_exists($i, $routes) && !empty($routes[$i])) {
+			$action_name = $routes[$i];
+			$i++;
 		}
 
-		// получаем. дополнительные параметры для API
+		// получаем дополнительные параметры (не должны использоваться!)
 		$params = array();
-		$i = 3;
 		while (array_key_exists($i, $routes) && !empty($routes[$i])) {
 			$params[] = $routes[$i];
 			$i++;
+		}
+		if (!empty($params)) {
+			throw new Exception(400);
 		}
 
 		// добавляем префиксы
@@ -80,7 +98,7 @@ class Route {
 
 		if (method_exists($controller, $action)) {
 			// вызываем действие контроллера
-			$controller->$action($params);
+			$controller->$action($index);
 		}
 		else {
 			throw new Exception(404);

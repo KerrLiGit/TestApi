@@ -7,10 +7,9 @@ class Controller_Error extends Controller {
 		$this->view = new View();
 	}
 
-	function action_code($params) {
-		$code = $params[0];
-		$data = $this->model->get_error($code);
-		$this->view->generate('view_error.php', 'view_template.php', $data);
+	function action_index($index = null) {
+		$json = $this->model->get_error($index);
+		$this->view->generate('view_error.php', 'view_api_template.php', $json);
 	}
 
 }

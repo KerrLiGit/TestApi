@@ -4,12 +4,9 @@ class Model_Main extends Model {
 
 	public function get_data() {
 		$json = array(
-			'message' => "See specification in /openapi"
+			'success' => 'true',
 		);
-		$data = array(
-			'json' => $json
-		);
-		return $data;
+		return $json;
 	}
 
 }

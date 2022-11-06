@@ -1,0 +1,301 @@
+openapi: 3.0.3
+info:
+  title: Test System - OpenAPI 3.0
+  description: |-
+    This is a Test System API based on the OpenAPI 3.0 specification.
+  version: 1.0.11
+servers:
+  - url: http://testapi.local:8020
+tags:
+  - name: user
+    description: Work with users
+  - name: group
+    description: Work with group of students
+  - name: role
+    description: Work with role of users
+paths:
+  /user:
+    get:
+      tags:
+        - user
+      summary: Find all users
+      operationId: get_user
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        '204':
+          description: Users does not exist
+        '401':
+          description: You must be authorized
+    post:
+      tags:
+        - user
+      summary: Create new user account
+      operationId: post_user
+      requestBody:
+        description: Created user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/user_without_id'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request
+        '401':
+          description: You must be authorized
+  /user/{userid}:
+    get:
+      tags:
+        - user
+      summary: Find user by id
+      operationId: get_userid
+      parameters:
+        - name: userid
+          in: path
+          description: Id of user account
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user_without_id'
+        '204':
+          description: User does not exist
+        '401':
+          description: You must be authorized
+    put:
+      tags:
+        - user
+      summary: Update user account
+      operationId: put_userid
+      parameters:
+        - name: userid
+          in: path
+          description: Id of user account
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Updated user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/user_without_id'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+        '204':
+          description: User does not exist
+        '400':
+          description: Bad request
+        '401':
+          description: You must be authorized
+    delete:
+      tags:
+        - user
+      summary: Deletes a user by id
+      operationId: delete_userid
+      parameters:
+        - name: userid
+          in: path
+          description: Id of user account
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+        '204':
+          description: User does not exist
+        '401':
+          description: You must be authorized
+  /group:
+    get:
+      tags:
+        - group
+      summary: Find groups of students
+      operationId: get_group
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/group'
+        '401':
+          description: You must be authorized
+    post:
+      tags:
+        - group
+      summary: Create a new group
+      operationId: post_group
+      requestBody:
+        description: Created group
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/group'
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request
+        '401':
+          description: You must be authorized
+  /group/{group}:
+    get:
+      tags:
+        - group
+      summary: Find students by group
+      operationId: get_groupname
+      parameters:
+        - name: group
+          in: path
+          description: Group of students to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/user'
+        '204':
+          description: Group does not exist
+        '401':
+          description: You must be authorized
+    put:
+      tags:
+        - group
+      summary: Update group
+      description: All students in this group will be redirect to updated group
+      operationId: put_groupname
+      parameters:
+        - name: group
+          in: path
+          description: Group of students to update
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Updated group
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/group'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+        '204':
+          description: Group does not exist
+        '400':
+          description: Bad request
+        '401':
+          description: You must be authorized
+    delete:
+      tags:
+        - group
+      summary: Deletes a group
+      description: All students in this group will be deleted too
+      operationId: delete_groupname
+      parameters:
+        - name: group
+          in: path
+          description: Group of student accounts
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+        '204':
+          description: Group does not exist
+        '401':
+          description: You must be authorized
+  /role/{role}:
+    get:
+      tags:
+        - role
+      summary: Find users by role
+      operationId: get_role
+      parameters:
+        - name: role
+          in: path
+          description: Role of users to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/user'
+        '204':
+          description: Role does not exist
+        '401':
+          description: You must be authorized to view this page
+components:
+  schemas:
+    user:
+      type: object
+      properties:
+        userid:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: Николаев Павел Максимович
+        group:
+          type: string
+          example: ИКБО-18-20
+        role:
+          type: string
+          example: student
+    user_without_id:
+      type: object
+      properties:
+        username:
+          type: string
+          example: Николаев Павел Максимович
+        group:
+          type: string
+          example: ИКБО-18-20
+        role:
+          type: string
+          example: student
+    group:
+      type: object
+      properties:
+        group:
+          type: string
+          example: ИКБО-18-20
+  requestBodies:
+    user:
+      description: User object
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/user'

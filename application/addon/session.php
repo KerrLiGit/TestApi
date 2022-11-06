@@ -20,7 +20,8 @@ class Session {
 
 		// исп. постоянные соединения
 		//$mysqli = new Xmysqli("p:localhost", "u133692_root", "root", "u133692_teacherbase", $login);
-		$mysqli = new Xmysqli("p:localhost", "root", "", "teacherbase", $login);
+		//$mysqli = new Xmysqli("p:localhost", "root", "", "teacherbase", $login);
+		$mysqli = new Xmysqli("p:localhost", "root", "", "testbase", $login);
 		$mysqli->query("SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
 		return $mysqli;
 	}

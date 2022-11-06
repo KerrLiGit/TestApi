@@ -8,5 +8,5 @@ require_once 'addon/session.php';
 try {
 	Route::start();
 } catch (Exception $e) {
-	header('Location: http://' . $_SERVER['HTTP_HOST'] . '/error/code/' . $e->getMessage());
+	header('Location: http://' . $_SERVER['HTTP_HOST'] . '/error/' . $e->getMessage());
 }
