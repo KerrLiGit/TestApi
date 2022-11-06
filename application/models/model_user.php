@@ -24,6 +24,9 @@ class Model_User extends Model {
 		throw new Exception(401);
 	}
 
+	/*
+	 * Find all users
+	 */
 	/**
 	 * @throws Exception
 	 */
@@ -34,16 +37,19 @@ class Model_User extends Model {
 		}
 		$mysqli = Session::get_sql_connection();
 		$users = $mysqli->query('SELECT * FROM `user`');
-		$result = array();
+		$response = array();
 		while ($user = $users->fetch_assoc()) {
-			$result[] = $user;
+			$response[] = $user;
 		}
 		return array(
 			'success' => 'true',
-			'data' => $result
+			'data' => $response
 		);
 	}
 
+	/*
+	 * Find user by userid
+	 */
 	/**
 	 * @throws Exception
 	 */
@@ -59,13 +65,16 @@ class Model_User extends Model {
 			throw new Exception(500);
 		}
 		$users = $stmt->get_result();
-		$result = $users->fetch_assoc();
+		$response = $users->fetch_assoc();
 		return array(
 			'success' => 'true',
-			'data' => $result
+			'data' => $response
 		);
 	}
 
+	/*
+	 * Find all users (only one column in $action)
+	 */
 	/**
 	 * @throws Exception
 	 */
@@ -76,16 +85,19 @@ class Model_User extends Model {
 		}
 		$mysqli = Session::get_sql_connection();
 		$users = $mysqli->query('SELECT `' . $action . '` FROM user');
-		$result = array();
+		$response = array();
 		while ($user = $users->fetch_assoc()) {
-			$result[] = $user;
+			$response[] = $user;
 		}
 		return array(
 			'success' => 'true',
-			'data' => $result
+			'data' => $response
 		);
 	}
 
+	/*
+	 * Find user by userid (only one column in $action)
+	 */
 	/**
 	 * @throws Exception
 	 */
@@ -101,13 +113,126 @@ class Model_User extends Model {
 			throw new Exception(500);
 		}
 		$users = $stmt->get_result();
-		$result = $users->fetch_assoc();
+		$response = $users->fetch_assoc();
 		return array(
 			'success' => 'true',
-			'data' => $result
+			'data' => $response
 		);
 	}
 
+	/*
+	 * Checking if json is user
+	 */
+	/**
+	 * @throws exception
+	 */
+	private function is_user($json): bool {
+		$mysqli = Session::get_sql_connection();
+		$roles_query = $mysqli->query('SELECT role FROM role');
+		$roles = array();
+		while ($role = $roles_query->fetch_assoc()) {
+			$roles[] = $role['role'];
+		}
+		$role_pattern = '/^' . implode('|', $roles) . '$/';
+		foreach ($json as $key => $value) {
+			if (($key == 'name' && preg_match('/^[А-Я][а-я]+ [А-Я][а-я]+ [А-Я][а-я]+$/u', $value)) ||
+				($key == 'group' && preg_match('/^[А-Я]{4}(-[0-9]{2}){2}$/u', $value)) ||
+				($key == 'role' && preg_match($role_pattern, $value))) {
+				continue;
+			}
+			else {
+				return false;
+			}
+		}
+		return count($json) == 3;
+	}
 
+	/*
+	 * Create new user
+	 */
+	/**
+	 * @throws Exception
+	 */
+	public function post_user(): array {
+		$request = (array) json_decode(file_get_contents('php://input'));
+		if (empty($request) || !self::is_user($request)) {
+			throw new Exception(400);
+		}
+		$mysqli = Session::get_sql_connection();
+		$stmt = $mysqli->prepare('INSERT INTO `user` (name, `group`, role) VALUES (?, ?, ?)');
+		$stmt->bind_param('sss', $request['name'], $request['group'], $request['role']);
+		if (!$stmt->execute()) {
+			throw new Exception(500);
+		}
+		return array(
+			'success' => 'true'
+		);
+	}
+
+	/*
+	 * Update user by index
+	 */
+	/**
+	 * @throws Exception
+	 */
+	public function put_user_index($index): array {
+		$request = (array) json_decode(file_get_contents('php://input'));
+		if (empty($request) || !self::is_user($request)) {
+			throw new Exception(400);
+		}
+		$mysqli = Session::get_sql_connection();
+		$stmt = $mysqli->prepare('UPDATE `user` SET name = ?, `group` = ?, role = ? WHERE userid = ?');
+		$stmt->bind_param('sssi', $request['name'], $request['group'], $request['role'], $index);
+		if (!$stmt->execute()) {
+			throw new Exception(500);
+		}
+		return array(
+			'success' => 'true'
+		);
+	}
+
+	/*
+	 * Update action at user by index
+	 */
+	/**
+	 * @throws Exception
+	 */
+	public function put_user_index_action($index, $action): array {
+		$request = (array) json_decode(file_get_contents('php://input'));
+		if (empty($request) || !self::is_user($request)) {
+			throw new Exception(400);
+		}
+		$mysqli = Session::get_sql_connection();
+		$stmt = $mysqli->prepare('UPDATE `user` SET `' . $action . '` = ? WHERE userid = ?');
+		$stmt->bind_param('si', $request[$action], $index);
+		if (!$stmt->execute()) {
+			throw new Exception(500);
+		}
+		return array(
+			'success' => 'true'
+		);
+	}
+
+	/*
+	 * Delete user by index
+	 */
+	/**
+	 * @throws Exception
+	 */
+	public function delete_user_index($index): array {
+		$request = (array) json_decode(file_get_contents('php://input'));
+		if (!empty($request)) {
+			throw new Exception(400);
+		}
+		$mysqli = Session::get_sql_connection();
+		$stmt = $mysqli->prepare('DELETE FROM `user` WHERE userid = ?');
+		$stmt->bind_param('i', $index);
+		if (!$stmt->execute()) {
+			throw new Exception(500);
+		}
+		return array(
+			'success' => 'true'
+		);
+	}
 
 }

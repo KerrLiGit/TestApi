@@ -26,15 +26,43 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/user'
-        '204':
-          description: Users does not exist
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data: 
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/user'
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
         '401':
-          description: You must be authorized
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
     post:
       tags:
         - user
-      summary: Create new user account
+      summary: Create new user  
       operationId: post_user
       requestBody:
         description: Created user
@@ -46,20 +74,48 @@ paths:
       responses:
         '200':
           description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
         '400':
-          description: Bad request
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
         '401':
-          description: You must be authorized
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
   /user/{userid}:
     get:
       tags:
         - user
-      summary: Find user by id
-      operationId: get_userid
+      summary: Find user by userid
+      operationId: get_user_index
       parameters:
         - name: userid
           in: path
-          description: Id of user account
+          description: Id of user
           required: true
           schema:
             type: integer
@@ -69,16 +125,42 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/user_without_id'
-        '204':
-          description: User does not exist
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/user'
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
         '401':
-          description: You must be authorized
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
     put:
       tags:
         - user
-      summary: Update user account
-      operationId: put_userid
+      summary: Update user by userid
+      operationId: put_index
       parameters:
         - name: userid
           in: path
@@ -96,16 +178,42 @@ paths:
       responses:
         '200':
           description: Successful operation
-        '204':
-          description: User does not exist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
         '400':
-          description: Bad request
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
         '401':
-          description: You must be authorized
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
     delete:
       tags:
         - user
-      summary: Deletes a user by id
+      summary: Delete user by id
       operationId: delete_userid
       parameters:
         - name: userid
@@ -117,155 +225,275 @@ paths:
       responses:
         '200':
           description: Successful operation
-        '204':
-          description: User does not exist
-        '401':
-          description: You must be authorized
-  /group:
-    get:
-      tags:
-        - group
-      summary: Find groups of students
-      operationId: get_group
-      responses:
-        '200':
-          description: Successful operation
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/group'
-        '401':
-          description: You must be authorized
-    post:
-      tags:
-        - group
-      summary: Create a new group
-      operationId: post_group
-      requestBody:
-        description: Created group
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/group'
-      responses:
-        '200':
-          description: Successful operation
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
         '400':
-          description: Bad request
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
         '401':
-          description: You must be authorized
-  /group/{group}:
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+  /user/{action}:
     get:
       tags:
-        - group
-      summary: Find students by group
-      operationId: get_groupname
+        - user
+      summary: Find all user actions (userid, name, group or role)
+      operationId: get_user_action
       parameters:
-        - name: group
+        - name: action
           in: path
-          description: Group of students to return
+          description: Action of user (userid, name, group or role)
           required: true
           schema:
-            type: string
+            type: integer
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/user'
-        '204':
-          description: Group does not exist
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data: 
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/user_id'
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
         '401':
-          description: You must be authorized
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+  /user/{userid}/{action}:
+    get:
+      tags:
+        - user
+      summary: Find all user actions (userid, name, group or role)
+      operationId: get_user_index_action
+      parameters:
+        - name: userid
+          in: path
+          description: Id of user account
+          required: true
+          schema:
+            type: integer
+        - name: action
+          in: path
+          description: Action of user (userid, name, group or role)
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data: 
+                    $ref: '#/components/schemas/user_id'
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
     put:
       tags:
-        - group
-      summary: Update group
-      description: All students in this group will be redirect to updated group
-      operationId: put_groupname
+        - user
+      summary: Update user by userid
+      operationId: put_index_action
       parameters:
-        - name: group
+        - name: userid
           in: path
-          description: Group of students to update
+          description: Id of user account
           required: true
           schema:
-            type: string
+            type: integer
+        - name: action
+          in: path
+          description: Action of user (userid, name, group or role)
+          required: true
+          schema:
+            type: integer
       requestBody:
-        description: Updated group
+        description: Updated user
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/group'
+              $ref: '#/components/schemas/user_without_id'
         required: true
       responses:
         '200':
           description: Successful operation
-        '204':
-          description: Group does not exist
-        '400':
-          description: Bad request
-        '401':
-          description: You must be authorized
-    delete:
-      tags:
-        - group
-      summary: Deletes a group
-      description: All students in this group will be deleted too
-      operationId: delete_groupname
-      parameters:
-        - name: group
-          in: path
-          description: Group of student accounts
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation
-        '204':
-          description: Group does not exist
-        '401':
-          description: You must be authorized
-  /role/{role}:
-    get:
-      tags:
-        - role
-      summary: Find users by role
-      operationId: get_role
-      parameters:
-        - name: role
-          in: path
-          description: Role of users to return
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/user'
-        '204':
-          description: Role does not exist
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
         '401':
-          description: You must be authorized to view this page
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
 components:
   schemas:
+    400:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error: 
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 400
+            message:
+              type: integer
+              example: Bad Request
+    401:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error: 
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 401
+            message:
+              type: integer
+              example: Unauthorised
+    403:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error: 
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 403
+            message:
+              type: integer
+              example: Forbidden
+    500:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error: 
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 500
+            message:
+              type: integer
+              example: Internal Server Error
     user:
       type: object
       properties:
         userid:
           type: integer
           example: 1
-        username:
+        name:
           type: string
           example: Николаев Павел Максимович
         group:
@@ -274,10 +502,16 @@ components:
         role:
           type: string
           example: student
+    user_id:
+      type: object
+      properties:
+        userid:
+          type: integer
+          example: 1
     user_without_id:
       type: object
       properties:
-        username:
+        name:
           type: string
           example: Николаев Павел Максимович
         group:
@@ -286,12 +520,6 @@ components:
         role:
           type: string
           example: student
-    group:
-      type: object
-      properties:
-        group:
-          type: string
-          example: ИКБО-18-20
   requestBodies:
     user:
       description: User object

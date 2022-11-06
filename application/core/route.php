@@ -51,7 +51,6 @@ class Route {
 		}
 
 		// получаем имя экшена
-
 		if (array_key_exists($i, $routes) && !empty($routes[$i])) {
 			$action_name = $routes[$i];
 			$i++;
