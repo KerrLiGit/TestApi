@@ -15,6 +15,8 @@ tags:
     description: Work with tests
   - name: course
     description: Work with couses - groups of tests
+  - name: question
+    description: Work with questions in tests
 paths:
   /user:
     get:
@@ -103,7 +105,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/403'
         '500':
-          description: Server error
+          description: Server error - Wrong groupid or role
           content:
             application/json:
               schema:
@@ -207,7 +209,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/403'
         '500':
-          description: Server error
+          description: Server error - Wrong groupid or role
           content:
             application/json:
               schema:
@@ -641,7 +643,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/403'
         '500':
-          description: Server error
+          description: Server error - Wrong courseid
           content:
             application/json:
               schema:
@@ -745,7 +747,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/403'
         '500':
-          description: Server error
+          description: Server error - Wrong courseid
           content:
             application/json:
               schema:
@@ -1092,6 +1094,249 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500'
+  /question:
+    get:
+      tags:
+        - question
+      summary: Find all questions
+      operationId: get_question
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data: 
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/question'
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+    post:
+      tags:
+        - question
+      summary: Create new question
+      operationId: post_question
+      requestBody:
+        description: Created question
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/question_without_id'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error - Wrong testid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+  /question/{questionid}:
+    get:
+      tags:
+        - question
+      summary: Find question by questionid
+      operationId: get_question_index
+      parameters:
+        - name: questionid
+          in: path
+          description: Id of question
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/question'
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+    put:
+      tags:
+        - question
+      summary: Update question by questionid
+      operationId: put_question_index
+      parameters:
+        - name: questionid
+          in: path
+          description: Id of question
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Updated test or some question attributes
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/question_without_id'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error - Wrong testid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+    delete:
+      tags:
+        - question
+      summary: Delete question by questionid
+      operationId: delete_question_index
+      parameters:
+        - name: questionid
+          in: path
+          description: Id of question
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
 components:
   schemas:
     400:
@@ -1238,6 +1483,33 @@ components:
         number:
           type: integer
           example: 1
+    question:
+      type: object
+      properties:
+        questionid:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Первый вопрос
+        testid:
+          type: integer
+          example: 1
+        content:
+          type: string
+          example: Содержание вопроса
+    question_without_id:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Первый вопрос
+        testid:
+          type: integer
+          example: 1
+        content:
+          type: string
+          example: Содержание вопроса
   requestBodies:
     user:
       description: User object
