@@ -1,16 +1,16 @@
 <?php
 
-class Model_Group extends Model {
+class Model_Course extends Model {
 
 	/*
-	 * Find all groups
+	 * Find all courses
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function get_group(): array {
+	public function get_course(): array {
 		$mysqli = Session::get_sql_connection();
-		$users = $mysqli->query('SELECT * FROM `group`');
+		$users = $mysqli->query('SELECT * FROM course');
 		$response = array();
 		while ($user = $users->fetch_assoc()) {
 			$response[] = $user;
@@ -22,14 +22,14 @@ class Model_Group extends Model {
 	}
 
 	/*
-	 * Find group by groupid
+	 * Find course by courseid
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function get_group_index($index): array {
+	public function get_course_index($index): array {
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('SELECT * FROM `group` WHERE groupid = ?');
+		$stmt = $mysqli->prepare('SELECT * FROM course WHERE courseid = ?');
 		$stmt->bind_param('i', $index);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
@@ -43,15 +43,15 @@ class Model_Group extends Model {
 	}
 
 	/*
-	 * Checking if json is group
+	 * Checking if json is course
 	 * Field all_attributes is boolean
-	 * If all_attributes is true, json must have all group attributes, else some attributes may be skipped
+	 * If all_attributes is true, json must have all course attributes, else some attributes may be skipped
 	 */
 	/**
 	 * @throws exception
 	 */
-	private function is_group($json, $all_attributes = true): bool {
-		$name_pattern = '/^[А-Я]{4}(-[0-9]{2}){2}$/u';
+	private function is_course($json, $all_attributes = true): bool {
+		$name_pattern = '/^[a-zA-Zа-яА-Я0-9 \.,-]+$/u';
 		foreach ($json as $key => $value) {
 			if (($key == 'name' && preg_match($name_pattern, $value))) {
 				continue;
@@ -67,18 +67,18 @@ class Model_Group extends Model {
 	}
 
 	/*
-	 * Create new group
+	 * Create new course
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function post_group(): array {
+	public function post_course(): array {
 		$request = (array) json_decode(file_get_contents('php://input'));
-		if (empty($request) || !self::is_group($request, true)) {
+		if (empty($request) || !self::is_course($request, true)) {
 			throw new Exception(400);
 		}
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('INSERT INTO `group` (name) VALUES (?)');
+		$stmt = $mysqli->prepare('INSERT INTO course (name) VALUES (?)');
 		$stmt->bind_param('s',  $request['name']);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
@@ -89,14 +89,14 @@ class Model_Group extends Model {
 	}
 
 	/*
-	 * Update group (or some group attributes) by groupid
+	 * Update course (or some course attributes) by courseid
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function put_group_index($index): array {
+	public function put_course_index($index): array {
 		$request = (array) json_decode(file_get_contents('php://input'));
-		if (empty($request) || !self::is_group($request, false)) {
+		if (empty($request) || !self::is_course($request, false)) {
 			throw new Exception(400);
 		}
 		if (!is_numeric($index)) {
@@ -106,7 +106,7 @@ class Model_Group extends Model {
 		foreach ($request as $key => $value) {
 			$attributes[] = '`' . $key . '` = "' . $value . '"';
 		}
-		$query = 'UPDATE `group` SET ' . implode(', ', $attributes) . ' WHERE groupid = ' . $index;
+		$query = 'UPDATE course SET ' . implode(', ', $attributes) . ' WHERE courseid = ' . $index;
 		$mysqli = Session::get_sql_connection();
 		if (!$mysqli->query($query)) {
 			throw new Exception(500);
@@ -117,14 +117,14 @@ class Model_Group extends Model {
 	}
 
 	/*
-	 * Delete group by groupid
+	 * Delete course by courseid
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function delete_group_index($index): array {
+	public function delete_course_index($index): array {
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('DELETE FROM `group` WHERE groupid = ?');
+		$stmt = $mysqli->prepare('DELETE FROM course WHERE courseid = ?');
 		$stmt->bind_param('i', $index);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
@@ -135,14 +135,14 @@ class Model_Group extends Model {
 	}
 
 	/*
-	 * Find students on group by groupid
+	 * Find tests on course by courseid
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function get_group_index_student($index): array {
+	public function get_course_index_test($index): array {
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('SELECT * FROM `user` WHERE groupid = ?');
+		$stmt = $mysqli->prepare('SELECT * FROM test WHERE courseid = ?');
 		$stmt->bind_param('i', $index);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
