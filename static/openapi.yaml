@@ -10,7 +10,9 @@ tags:
   - name: user
     description: Work with users
   - name: group
-    description: Work with group of students
+    description: Work with groups of students
+  - name: course
+    description: Work with couses - groups of tests
 paths:
   /user:
     get:
@@ -550,6 +552,301 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500'
+  /course:
+    get:
+      tags:
+        - course
+      summary: Find all courses
+      operationId: get_course
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data: 
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/course'
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+    post:
+      tags:
+        - course
+      summary: Create new course
+      operationId: post_course
+      requestBody:
+        description: Created course
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/course_without_id'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+  /course/{courseid}:
+    get:
+      tags:
+        - course
+      summary: Find course by courseid
+      operationId: get_course_index
+      parameters:
+        - name: courseid
+          in: path
+          description: Id of course
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/course'
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+    put:
+      tags:
+        - course
+      summary: Update course by courseid
+      operationId: put_course_index
+      parameters:
+        - name: courseid
+          in: path
+          description: Id of course
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Updated course or some course attributes
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/course_without_id'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+    delete:
+      tags:
+        - course
+      summary: Delete course by courseid
+      operationId: delete_course_index
+      parameters:
+        - name: courseid
+          in: path
+          description: Id of course
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+  /course/{courseid}/test:
+    get:
+      tags:
+        - course
+      summary: Find all tests of course
+      operationId: get_course_index_student
+      parameters:
+        - name: courseid
+          in: path
+          description: Id of course
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/test'
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
 components:
   schemas:
     400:
@@ -627,12 +924,6 @@ components:
         role:
           type: string
           example: student
-    user_name:
-      type: object
-      properties:
-        name:
-          type: string
-          example: Николаев Павел Максимович
     user_without_id:
       type: object
       properties:
@@ -660,6 +951,36 @@ components:
         name:
           type: string
           example: ИКБО-18-20
+    course:
+      type: object
+      properties:
+        courseid:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Первый курс
+    course_without_id:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Первый курс
+    test:
+      type: object
+      properties:
+        testid:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Первый тест
+        courseid:
+          type: integer
+          example: 1
+        number:
+          type: integer
+          example: 1
   requestBodies:
     user:
       description: User object
