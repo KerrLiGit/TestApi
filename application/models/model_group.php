@@ -134,7 +134,6 @@ class Model_Group extends Model {
 	 * @throws exception
 	 */
 	private function is_group($json, $all_attributes = true): bool {
-		$mysqli = Session::get_sql_connection();
 		$name_pattern = '/^[А-Я]{4}(-[0-9]{2}){2}$/u';
 		foreach ($json as $key => $value) {
 			if (($key == 'name' && preg_match($name_pattern, $value))) {
