@@ -9,7 +9,7 @@ servers:
 tags:
   - name: user
     description: Work with users
-  - name: group
+  - name: groupid
     description: Work with group of students
   - name: role
     description: Work with role of users
@@ -261,12 +261,12 @@ paths:
     get:
       tags:
         - user
-      summary: Find all user actions (userid, name, group or role)
+      summary: Find all user actions (userid, name, groupid or role)
       operationId: get_user_action
       parameters:
         - name: action
           in: path
-          description: Action of user (userid, name, group or role)
+          description: Action of user (userid, name, groupid or role)
           required: true
           schema:
             type: integer
@@ -313,7 +313,7 @@ paths:
     get:
       tags:
         - user
-      summary: Find all user actions (userid, name, group or role)
+      summary: Find all user actions (userid, name, groupid or role)
       operationId: get_user_index_action
       parameters:
         - name: userid
@@ -324,7 +324,7 @@ paths:
             type: integer
         - name: action
           in: path
-          description: Action of user (userid, name, group or role)
+          description: Action of user (userid, name, groupid or role)
           required: true
           schema:
             type: integer
@@ -368,7 +368,7 @@ paths:
     put:
       tags:
         - user
-      summary: Update user by userid
+      summary: Update action of user (userid, name, groupid or role) by userid
       operationId: put_index_action
       parameters:
         - name: userid
@@ -379,7 +379,7 @@ paths:
             type: integer
         - name: action
           in: path
-          description: Action of user (userid, name, group or role)
+          description: Action of user (userid, name, groupid or role)
           required: true
           schema:
             type: integer
@@ -496,9 +496,9 @@ components:
         name:
           type: string
           example: Николаев Павел Максимович
-        group:
-          type: string
-          example: ИКБО-18-20
+        groupid:
+          type: integer
+          example: 1
         role:
           type: string
           example: student
@@ -514,9 +514,9 @@ components:
         name:
           type: string
           example: Николаев Павел Максимович
-        group:
-          type: string
-          example: ИКБО-18-20
+        groupid:
+          type: integer
+          example: 1
         role:
           type: string
           example: student

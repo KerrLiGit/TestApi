@@ -1,9 +1,9 @@
 <?php
 
-class Controller_User extends Controller {
+class Controller_Group extends Controller {
 
 	function __construct() {
-		$this->model = new Model_User();
+		$this->model = new Model_Group();
 		$this->view = new View();
 	}
 
@@ -14,8 +14,8 @@ class Controller_User extends Controller {
 		$this->model->auth();
 		if ($index == null) {
 			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'get' => $this->model->get_user(),
-				'post' => $this->model->post_user(),
+				'get' => $this->model->get_group(),
+				'post' => $this->model->post_group(),
 				default => throw new Exception(405)
 			};
 		}
@@ -96,18 +96,18 @@ class Controller_User extends Controller {
 	/**
 	 * @throws exception
 	 */
-	function action_groupid($index = null) {
+	function action_group($index = null) {
 		$this->model->auth();
 		if ($index == null) {
 			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'get' => $this->model->get_user_action('groupid'),
+				'get' => $this->model->get_user_action('group'),
 				default => throw new Exception(405)
 			};
 		}
 		else {
 			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'get' => $this->model->get_user_index_action($index, 'groupid'),
-				'put' => $this->model->put_user_index_action($index, 'groupid'),
+				'get' => $this->model->get_user_index_action($index, 'group'),
+				'put' => $this->model->put_user_index_action($index, 'group'),
 				default => throw new Exception(405)
 			};
 		}

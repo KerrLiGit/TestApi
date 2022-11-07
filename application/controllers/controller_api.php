@@ -6,7 +6,7 @@ class Controller_Api extends Controller {
 		$this->view = new View();
 	}
 
-	function action_index() {
+	function action_index($index = null) {
 		$this->view->generate('view_openapi.php', 'view_api_template.php');
 	}
 

@@ -136,7 +136,7 @@ class Model_User extends Model {
 		$role_pattern = '/^' . implode('|', $roles) . '$/';
 		foreach ($json as $key => $value) {
 			if (($key == 'name' && preg_match('/^[А-Я][а-я]+ [А-Я][а-я]+ [А-Я][а-я]+$/u', $value)) ||
-				($key == 'group' && preg_match('/^[А-Я]{4}(-[0-9]{2}){2}$/u', $value)) ||
+				($key == 'groupid' && is_numeric($value)) ||
 				($key == 'role' && preg_match($role_pattern, $value))) {
 				continue;
 			}
@@ -159,9 +159,10 @@ class Model_User extends Model {
 			throw new Exception(400);
 		}
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('INSERT INTO `user` (name, `group`, role) VALUES (?, ?, ?)');
-		$stmt->bind_param('sss', $request['name'], $request['group'], $request['role']);
+		$stmt = $mysqli->prepare('INSERT INTO `user` (name, `groupid`, role) VALUES (?, ?, ?)');
+		$stmt->bind_param('sss', $request['name'], $request['groupid'], $request['role']);
 		if (!$stmt->execute()) {
+			Route::addlog($mysqli->error);
 			throw new Exception(500);
 		}
 		return array(
@@ -181,8 +182,8 @@ class Model_User extends Model {
 			throw new Exception(400);
 		}
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('UPDATE `user` SET name = ?, `group` = ?, role = ? WHERE userid = ?');
-		$stmt->bind_param('sssi', $request['name'], $request['group'], $request['role'], $index);
+		$stmt = $mysqli->prepare('UPDATE `user` SET name = ?, `groupid` = ?, role = ? WHERE userid = ?');
+		$stmt->bind_param('sssi', $request['name'], $request['groupid'], $request['role'], $index);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
 		}
