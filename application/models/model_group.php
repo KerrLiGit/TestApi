@@ -172,7 +172,7 @@ class Model_Group extends Model {
 	}
 
 	/*
-	 * Update group (or some group attributes) by index
+	 * Update group (or some group attributes) by groupid
 	 */
 	/**
 	 * @throws Exception
@@ -201,7 +201,7 @@ class Model_Group extends Model {
 	}
 
 	/*
-	 * Delete group by index
+	 * Delete group by groupid
 	 */
 	/**
 	 * @throws Exception
@@ -219,6 +219,35 @@ class Model_Group extends Model {
 		}
 		return array(
 			'success' => 'true'
+		);
+	}
+
+	/*
+	 * Find students on group by groupid
+	 */
+	/**
+	 * @throws Exception
+	 */
+	public function get_group_index_student($index): array {
+		$request_string = file_get_contents('php://input');
+		$request = (array) json_decode($request_string);
+		if (!empty($request_string) || !empty($request)) {
+			throw new Exception(400);
+		}
+		$mysqli = Session::get_sql_connection();
+		$stmt = $mysqli->prepare('SELECT * FROM `user` WHERE groupid = ?');
+		$stmt->bind_param('i', $index);
+		if (!$stmt->execute()) {
+			throw new Exception(500);
+		}
+		$users = $stmt->get_result();
+		$response = array();
+		while ($user = $users->fetch_assoc()) {
+			$response[] = $user;
+		}
+		return array(
+			'success' => 'true',
+			'data' => $response
 		);
 	}
 

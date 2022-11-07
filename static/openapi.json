@@ -16,7 +16,7 @@
       "description": "Work with users"
     },
     {
-      "name": "groupid",
+      "name": "group",
       "description": "Work with group of students"
     },
     {
@@ -259,12 +259,12 @@
           "user"
         ],
         "summary": "Update user by userid",
-        "operationId": "put_index",
+        "operationId": "put_user_index",
         "parameters": [
           {
             "name": "userid",
             "in": "path",
-            "description": "Id of user account",
+            "description": "Id of user",
             "required": true,
             "schema": {
               "type": "integer"
@@ -272,7 +272,7 @@
           }
         ],
         "requestBody": {
-          "description": "Updated user",
+          "description": "Updated user or some user attributes",
           "content": {
             "application/json": {
               "schema": {
@@ -345,13 +345,13 @@
         "tags": [
           "user"
         ],
-        "summary": "Delete user by id",
-        "operationId": "delete_userid",
+        "summary": "Delete user by userid",
+        "operationId": "delete_user_index",
         "parameters": [
           {
             "name": "userid",
             "in": "path",
-            "description": "Id of user account",
+            "description": "Id of user",
             "required": true,
             "schema": {
               "type": "integer"
@@ -423,13 +423,13 @@
         "tags": [
           "user"
         ],
-        "summary": "Find all user actions (userid, name, groupid or role)",
+        "summary": "Find action of all users (name, groupid or role)",
         "operationId": "get_user_action",
         "parameters": [
           {
             "name": "action",
             "in": "path",
-            "description": "Action of user (userid, name, groupid or role)",
+            "description": "Action of user (name, groupid or role)",
             "required": true,
             "schema": {
               "type": "integer"
@@ -451,7 +451,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/user_id"
+                        "$ref": "#/components/schemas/user_name"
                       }
                     }
                   }
@@ -507,13 +507,13 @@
         "tags": [
           "user"
         ],
-        "summary": "Find all user actions (userid, name, groupid or role)",
+        "summary": "Find all user actions (name, groupid or role)",
         "operationId": "get_user_index_action",
         "parameters": [
           {
             "name": "userid",
             "in": "path",
-            "description": "Id of user account",
+            "description": "Id of user",
             "required": true,
             "schema": {
               "type": "integer"
@@ -522,7 +522,7 @@
           {
             "name": "action",
             "in": "path",
-            "description": "Action of user (userid, name, groupid or role)",
+            "description": "Action of user (name, groupid or role)",
             "required": true,
             "schema": {
               "type": "integer"
@@ -542,7 +542,237 @@
                       "example": true
                     },
                     "data": {
-                      "$ref": "#/components/schemas/user_id"
+                      "$ref": "#/components/schemas/user_name"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/400"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No authorisation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/401"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Wrong authorisation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/403"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/group": {
+      "get": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Find all groups",
+        "operationId": "get_group",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/group"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/400"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No authorisation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/401"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Wrong authorisation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/403"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Create new group",
+        "operationId": "post_group",
+        "requestBody": {
+          "description": "Created group",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/group_without_id"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/400"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No authorisation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/401"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Wrong authorisation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/403"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/group/{groupid}": {
+      "get": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Find group by groupid",
+        "operationId": "get_group_index",
+        "parameters": [
+          {
+            "name": "groupid",
+            "in": "path",
+            "description": "Id of group",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/group"
                     }
                   }
                 }
@@ -593,24 +823,15 @@
       },
       "put": {
         "tags": [
-          "user"
+          "group"
         ],
-        "summary": "Update action of user (userid, name, groupid or role) by userid",
-        "operationId": "put_index_action",
+        "summary": "Update group by groupid",
+        "operationId": "put_group_index",
         "parameters": [
           {
-            "name": "userid",
+            "name": "groupid",
             "in": "path",
-            "description": "Id of user account",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "action",
-            "in": "path",
-            "description": "Action of user (userid, name, groupid or role)",
+            "description": "Id of group",
             "required": true,
             "schema": {
               "type": "integer"
@@ -618,11 +839,11 @@
           }
         ],
         "requestBody": {
-          "description": "Updated user",
+          "description": "Updated group or some group attributes",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/user_without_id"
+                "$ref": "#/components/schemas/group_without_id"
               }
             }
           },
@@ -639,6 +860,340 @@
                     "success": {
                       "type": "boolean",
                       "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/400"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No authorisation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/401"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Wrong authorisation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/403"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Delete group by groupid",
+        "operationId": "delete_group_index",
+        "parameters": [
+          {
+            "name": "groupid",
+            "in": "path",
+            "description": "Id of group",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/400"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No authorisation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/401"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Wrong authorisation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/403"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/group/{action}": {
+      "get": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Find all actions of group (name)",
+        "operationId": "get_group_action",
+        "parameters": [
+          {
+            "name": "action",
+            "in": "path",
+            "description": "Action of group (name)",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/group_without_id"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/400"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No authorisation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/401"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Wrong authorisation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/403"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/group/{groupid}/{action}": {
+      "get": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Find all actions of group (name)",
+        "operationId": "get_group_index_action",
+        "parameters": [
+          {
+            "name": "groupid",
+            "in": "path",
+            "description": "Id of group",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "action",
+            "in": "path",
+            "description": "Action of group (name)",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/group_without_id"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/400"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No authorisation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/401"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Wrong authorisation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/403"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/group/{groupid}/student": {
+      "get": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Find all students of group",
+        "operationId": "get_group_index_student",
+        "parameters": [
+          {
+            "name": "groupid",
+            "in": "path",
+            "description": "Id of group",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/user"
+                      }
                     }
                   }
                 }
@@ -800,12 +1355,12 @@
           }
         }
       },
-      "user_id": {
+      "user_name": {
         "type": "object",
         "properties": {
-          "userid": {
-            "type": "integer",
-            "example": 1
+          "name": {
+            "type": "string",
+            "example": "Николаев Павел Максимович"
           }
         }
       },
@@ -823,6 +1378,28 @@
           "role": {
             "type": "string",
             "example": "student"
+          }
+        }
+      },
+      "group": {
+        "type": "object",
+        "properties": {
+          "groupid": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "ИКБО-18-20"
+          }
+        }
+      },
+      "group_without_id": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "ИКБО-18-20"
           }
         }
       }

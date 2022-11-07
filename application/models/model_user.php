@@ -181,7 +181,7 @@ class Model_User extends Model {
 	}
 
 	/*
-	 * Update user (or some user attributes) by index
+	 * Update user (or some user attributes) by userid
 	 */
 	/**
 	 * @throws Exception
@@ -210,7 +210,7 @@ class Model_User extends Model {
 	}
 
 	/*
-	 * Delete user by index
+	 * Delete user by userid
 	 */
 	/**
 	 * @throws Exception

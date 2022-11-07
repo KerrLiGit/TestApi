@@ -50,4 +50,19 @@ class Controller_Group extends Controller {
 		$this->view->generate('view_api.php', 'view_api_template.php', $data);
 	}
 
+	/**
+	 * @throws Exception
+	 */
+	function action_student($index = null) {
+		$this->model->auth();
+		if ($index == null) {
+			throw new Exception(405);
+		}
+		$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
+			'get' => $this->model->get_group_index_student($index),
+			default => throw new Exception(405)
+		};
+		$this->view->generate('view_api.php', 'view_api_template.php', $data);
+	}
+
 }
