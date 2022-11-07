@@ -21,30 +21,9 @@ class Controller_Group extends Controller {
 		}
 		else {
 			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'get' => $this->model->get_user_index($index),
-				'put' => $this->model->put_user_index($index),
-				'delete' => $this->model->delete_user_index($index),
-				default => throw new Exception(405)
-			};
-		}
-		$this->view->generate('view_api.php', 'view_api_template.php', $data);
-	}
-
-	/**
-	 * @throws Exception
-	 */
-	function action_userid($index = null) {
-		$this->model->auth();
-		if ($index == null) {
-			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'get' => $this->model->get_user_action('userid'),
-				default => throw new Exception(405)
-			};
-		}
-		else {
-			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'get' => $this->model->get_user_index_action($index, 'userid'),
-				'put' => $this->model->put_user_index_action($index, 'userid'),
+				'get' => $this->model->get_group_index($index),
+				'put' => $this->model->put_group_index($index),
+				'delete' => $this->model->delete_group_index($index),
 				default => throw new Exception(405)
 			};
 		}
@@ -58,56 +37,13 @@ class Controller_Group extends Controller {
 		$this->model->auth();
 		if ($index == null) {
 			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'get' => $this->model->get_user_action('name'),
+				'get' => $this->model->get_group_action('name'),
 				default => throw new Exception(405)
 			};
 		}
 		else {
 			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'get' => $this->model->get_user_index_action($index, 'name'),
-				'put' => $this->model->put_user_index_action($index, 'name'),
-				default => throw new Exception(405)
-			};
-		}
-		$this->view->generate('view_api.php', 'view_api_template.php', $data);
-	}
-
-	/**
-	 * @throws Exception
-	 */
-	function action_role($index = null) {
-		$this->model->auth();
-		if ($index == null) {
-			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'get' => $this->model->get_user_action('role'),
-				default => throw new Exception(405)
-			};
-		}
-		else {
-			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'get' => $this->model->get_user_index_action($index, 'role'),
-				'put' => $this->model->put_user_index_action($index, 'role'),
-				default => throw new Exception(405)
-			};
-		}
-		$this->view->generate('view_api.php', 'view_api_template.php', $data);
-	}
-
-	/**
-	 * @throws exception
-	 */
-	function action_group($index = null) {
-		$this->model->auth();
-		if ($index == null) {
-			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'get' => $this->model->get_user_action('group'),
-				default => throw new Exception(405)
-			};
-		}
-		else {
-			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'get' => $this->model->get_user_index_action($index, 'group'),
-				'put' => $this->model->put_user_index_action($index, 'group'),
+				'get' => $this->model->get_group_index_action($index, 'name'),
 				default => throw new Exception(405)
 			};
 		}

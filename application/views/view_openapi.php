@@ -1,2 +1,2 @@
 <?php
-readfile("static/openapi.html");
+readfile("static/openapi.json");

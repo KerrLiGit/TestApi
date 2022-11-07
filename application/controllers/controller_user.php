@@ -33,27 +33,6 @@ class Controller_User extends Controller {
 	/**
 	 * @throws Exception
 	 */
-	function action_userid($index = null) {
-		$this->model->auth();
-		if ($index == null) {
-			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'get' => $this->model->get_user_action('userid'),
-				default => throw new Exception(405)
-			};
-		}
-		else {
-			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'get' => $this->model->get_user_index_action($index, 'userid'),
-				'put' => $this->model->put_user_index_action($index, 'userid'),
-				default => throw new Exception(405)
-			};
-		}
-		$this->view->generate('view_api.php', 'view_api_template.php', $data);
-	}
-
-	/**
-	 * @throws Exception
-	 */
 	function action_name($index = null) {
 		$this->model->auth();
 		if ($index == null) {
@@ -65,7 +44,6 @@ class Controller_User extends Controller {
 		else {
 			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
 				'get' => $this->model->get_user_index_action($index, 'name'),
-				'put' => $this->model->put_user_index_action($index, 'name'),
 				default => throw new Exception(405)
 			};
 		}
@@ -86,7 +64,6 @@ class Controller_User extends Controller {
 		else {
 			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
 				'get' => $this->model->get_user_index_action($index, 'role'),
-				'put' => $this->model->put_user_index_action($index, 'role'),
 				default => throw new Exception(405)
 			};
 		}
@@ -101,14 +78,13 @@ class Controller_User extends Controller {
 		if ($index == null) {
 			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
 				'get' => $this->model->get_user_action('groupid'),
-				default => throw new Exception(405)
+				default => throw new Exception(405),
 			};
 		}
 		else {
 			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
 				'get' => $this->model->get_user_index_action($index, 'groupid'),
-				'put' => $this->model->put_user_index_action($index, 'groupid'),
-				default => throw new Exception(405)
+				default => throw new Exception(405),
 			};
 		}
 		$this->view->generate('view_api.php', 'view_api_template.php', $data);

@@ -1,6 +1,6 @@
 <?php
 
-class Model_User extends Model {
+class Model_Group extends Model {
 
 	/*
 	 * Authorisation for API users
@@ -25,19 +25,19 @@ class Model_User extends Model {
 	}
 
 	/*
-	 * Find all users
+	 * Find all groups
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function get_user(): array {
+	public function get_group(): array {
 		$request_string = file_get_contents('php://input');
 		$request = (array) json_decode($request_string);
 		if (!empty($request_string) || !empty($request)) {
 			throw new Exception(400);
 		}
 		$mysqli = Session::get_sql_connection();
-		$users = $mysqli->query('SELECT * FROM `user`');
+		$users = $mysqli->query('SELECT * FROM `group`');
 		$response = array();
 		while ($user = $users->fetch_assoc()) {
 			$response[] = $user;
@@ -49,19 +49,19 @@ class Model_User extends Model {
 	}
 
 	/*
-	 * Find user by userid
+	 * Find group by groupid
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function get_user_index($index): array {
+	public function get_group_index($index): array {
 		$request_string = file_get_contents('php://input');
 		$request = (array) json_decode($request_string);
 		if (!empty($request_string) || !empty($request)) {
 			throw new Exception(400);
 		}
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('SELECT * FROM `user` WHERE userid = ?');
+		$stmt = $mysqli->prepare('SELECT * FROM `group` WHERE groupid = ?');
 		$stmt->bind_param('i', $index);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
@@ -75,19 +75,19 @@ class Model_User extends Model {
 	}
 
 	/*
-	 * Find all users (only one attribute in $action)
+	 * Find all groups (only one attribute in $action)
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function get_user_action($action): array {
+	public function get_group_action($action): array {
 		$request_string = file_get_contents('php://input');
 		$request = (array) json_decode($request_string);
 		if (!empty($request_string) || !empty($request)) {
 			throw new Exception(400);
 		}
 		$mysqli = Session::get_sql_connection();
-		$users = $mysqli->query('SELECT `' . $action . '` FROM `user`');
+		$users = $mysqli->query('SELECT `' . $action . '` FROM `group`');
 		$response = array();
 		while ($user = $users->fetch_assoc()) {
 			$response[] = $user;
@@ -99,19 +99,19 @@ class Model_User extends Model {
 	}
 
 	/*
-	 * Find user by userid (only one attribute in $action)
+	 * Find group by groupid (only one attribute in $action)
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function get_user_index_action($index, $action): array {
+	public function get_group_index_action($index, $action): array {
 		$request_string = file_get_contents('php://input');
 		$request = (array) json_decode($request_string);
 		if (!empty($request_string) || !empty($request)) {
 			throw new Exception(400);
 		}
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('SELECT `' . $action . '` FROM `user` WHERE userid = ?');
+		$stmt = $mysqli->prepare('SELECT `' . $action . '` FROM `group` WHERE groupid = ?');
 		$stmt->bind_param('i', $index);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
@@ -125,53 +125,45 @@ class Model_User extends Model {
 	}
 
 	/*
-	 * Checking if json is user
+	 * Checking if json is group
 	 * Field all_attributes is boolean
-	 * If all_attributes is true, json must have all user attributes
+	 * If all_attributes is true, json must have all group attributes
 	 * Else some attributes may be skipped
 	 */
 	/**
 	 * @throws exception
 	 */
-	private function is_user($json, $all_attributes = true): bool {
+	private function is_group($json, $all_attributes = true): bool {
 		$mysqli = Session::get_sql_connection();
-		$roles_query = $mysqli->query('SELECT role FROM role');
-		$roles = array();
-		while ($role = $roles_query->fetch_assoc()) {
-			$roles[] = $role['role'];
-		}
-		$role_pattern = '/^' . implode('|', $roles) . '$/';
-		$name_pattern = '/^[А-Я][а-я]+ [А-Я][а-я]+ [А-Я][а-я]+$/u';
+		$name_pattern = '/^[А-Я]{4}(-[0-9]{2}){2}$/u';
 		foreach ($json as $key => $value) {
-			if (($key == 'name' && preg_match($name_pattern, $value)) ||
-				 ($key == 'groupid' && is_numeric($value)) ||
-				 ($key == 'role' && preg_match($role_pattern, $value))) {
+			if (($key == 'name' && preg_match($name_pattern, $value))) {
 				continue;
 			}
 			else {
 				return false;
 			}
 		}
-		if ($all_attributes == true) {
-			return count($json) == 3;
+		if ($all_attributes === true) {
+			return count($json) == 1;
 		}
 		return true;
 	}
 
 	/*
-	 * Create new user
+	 * Create new group
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function post_user(): array {
+	public function post_group(): array {
 		$request = (array) json_decode(file_get_contents('php://input'));
-		if (empty($request) || !self::is_user($request, true)) {
+		if (empty($request) || !self::is_group($request, true)) {
 			throw new Exception(400);
 		}
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('INSERT INTO `user` (name, `groupid`, role) VALUES (?, ?, ?)');
-		$stmt->bind_param('sss', $request['name'], $request['groupid'], $request['role']);
+		$stmt = $mysqli->prepare('INSERT INTO `group` (name) VALUES (?)');
+		$stmt->bind_param('s',  $request['name']);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
 		}
@@ -181,14 +173,14 @@ class Model_User extends Model {
 	}
 
 	/*
-	 * Update user (or some user attributes) by index
+	 * Update group (or some group attributes) by index
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function put_user_index($index): array {
+	public function put_group_index($index): array {
 		$request = (array) json_decode(file_get_contents('php://input'));
-		if (empty($request) || !self::is_user($request, false)) {
+		if (empty($request) || !self::is_group($request, false)) {
 			throw new Exception(400);
 		}
 		if (!is_numeric($index)) {
@@ -198,7 +190,7 @@ class Model_User extends Model {
 		foreach ($request as $key => $value) {
 			$attributes[] = '`' . $key . '` = "' . $value . '"';
 		}
-		$query = 'UPDATE `user` SET ' . implode(', ', $attributes) . ' WHERE userid = ' . $index;
+		$query = 'UPDATE `group` SET ' . implode(', ', $attributes) . ' WHERE groupid = ' . $index;
 		Route::addlog($query);
 		$mysqli = Session::get_sql_connection();
 		if (!$mysqli->query($query)) {
@@ -210,18 +202,18 @@ class Model_User extends Model {
 	}
 
 	/*
-	 * Delete user by index
+	 * Delete group by index
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function delete_user_index($index): array {
+	public function delete_group_index($index): array {
 		$request = (array) json_decode(file_get_contents('php://input'));
 		if (!empty($request)) {
 			throw new Exception(400);
 		}
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('DELETE FROM `user` WHERE userid = ?');
+		$stmt = $mysqli->prepare('DELETE FROM `group` WHERE groupid = ?');
 		$stmt->bind_param('i', $index);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
