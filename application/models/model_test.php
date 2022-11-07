@@ -1,16 +1,16 @@
 <?php
 
-class Model_User extends Model {
+class Model_Test extends Model {
 
 	/*
-	 * Find all users
+	 * Find all tests
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function get_user(): array {
+	public function get_test(): array {
 		$mysqli = Session::get_sql_connection();
-		$users = $mysqli->query('SELECT * FROM `user`');
+		$users = $mysqli->query('SELECT * FROM test');
 		$response = array();
 		while ($user = $users->fetch_assoc()) {
 			$response[] = $user;
@@ -22,14 +22,14 @@ class Model_User extends Model {
 	}
 
 	/*
-	 * Find user by userid
+	 * Find test by testid
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function get_user_index($index): array {
+	public function get_test_index($index): array {
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('SELECT * FROM `user` WHERE userid = ?');
+		$stmt = $mysqli->prepare('SELECT * FROM test WHERE testid = ?');
 		$stmt->bind_param('i', $index);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
@@ -43,26 +43,19 @@ class Model_User extends Model {
 	}
 
 	/*
-	 * Checking if json is user
+	 * Checking if json is test
 	 * Field all_attributes is boolean
-	 * If all_attributes is true, json must have all user attributes, else some attributes may be skipped
+	 * If all_attributes is true, json must have all test attributes, else some attributes may be skipped
 	 */
 	/**
 	 * @throws exception
 	 */
-	private function is_user($json, $all_attributes = true): bool {
-		$mysqli = Session::get_sql_connection();
-		$roles_query = $mysqli->query('SELECT role FROM role');
-		$roles = array();
-		while ($role = $roles_query->fetch_assoc()) {
-			$roles[] = $role['role'];
-		}
-		$role_pattern = '/^' . implode('|', $roles) . '$/';
-		$name_pattern = '/^[А-Я][а-я]+ [А-Я][а-я]+ [А-Я][а-я]+$/u';
+	private function is_test($json, $all_attributes = true): bool {
+		$name_pattern = '/^[a-zA-Zа-яА-Я0-9 \.,-]+$/u';
 		foreach ($json as $key => $value) {
 			if (($key == 'name' && preg_match($name_pattern, $value)) ||
-				 ($key == 'groupid' && is_numeric($value)) ||
-				 ($key == 'role' && preg_match($role_pattern, $value))) {
+				($key == 'courseid' && is_numeric($value)) ||
+				($key == 'number' && is_numeric($value))) {
 				continue;
 			}
 			else {
@@ -76,19 +69,19 @@ class Model_User extends Model {
 	}
 
 	/*
-	 * Create new user
+	 * Create new test
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function post_user(): array {
+	public function post_test(): array {
 		$request = (array) json_decode(file_get_contents('php://input'));
-		if (empty($request) || !self::is_user($request, true)) {
+		if (empty($request) || !self::is_test($request, true)) {
 			throw new Exception(400);
 		}
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('INSERT INTO `user` (name, `groupid`, role) VALUES (?, ?, ?)');
-		$stmt->bind_param('sss', $request['name'], $request['groupid'], $request['role']);
+		$stmt = $mysqli->prepare('INSERT INTO test (name, courseid, number) VALUES (?, ?, ?)');
+		$stmt->bind_param('sii', $request['name'], $request['courseid'], $request['number']);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
 		}
@@ -98,14 +91,14 @@ class Model_User extends Model {
 	}
 
 	/*
-	 * Update user (or some user attributes) by userid
+	 * Update test (or some test attributes) by testid
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function put_user_index($index): array {
+	public function put_test_index($index): array {
 		$request = (array) json_decode(file_get_contents('php://input'));
-		if (empty($request) || !self::is_user($request, false)) {
+		if (empty($request) || !self::is_test($request, false)) {
 			throw new Exception(400);
 		}
 		if (!is_numeric($index)) {
@@ -115,7 +108,7 @@ class Model_User extends Model {
 		foreach ($request as $key => $value) {
 			$attributes[] = '`' . $key . '` = "' . $value . '"';
 		}
-		$query = 'UPDATE `user` SET ' . implode(', ', $attributes) . ' WHERE userid = ' . $index;
+		$query = 'UPDATE test SET ' . implode(', ', $attributes) . ' WHERE testid = ' . $index;
 		$mysqli = Session::get_sql_connection();
 		if (!$mysqli->query($query)) {
 			throw new Exception(500);
@@ -126,14 +119,14 @@ class Model_User extends Model {
 	}
 
 	/*
-	 * Delete user by userid
+	 * Delete test by testid
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function delete_user_index($index): array {
+	public function delete_test_index($index): array {
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('DELETE FROM `user` WHERE userid = ?');
+		$stmt = $mysqli->prepare('DELETE FROM test WHERE testid = ?');
 		$stmt->bind_param('i', $index);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
