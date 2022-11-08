@@ -17,6 +17,8 @@ tags:
     description: Work with couses - groups of tests
   - name: question
     description: Work with questions in tests
+  - name: answer
+    description: Work with answers in questions
 paths:
   /user:
     get:
@@ -1249,7 +1251,7 @@ paths:
           schema:
             type: integer
       requestBody:
-        description: Updated test or some question attributes
+        description: Updated question or some question attributes
         content:
           application/json:
             schema:
@@ -1299,6 +1301,249 @@ paths:
         - name: questionid
           in: path
           description: Id of question
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+  /answer:
+    get:
+      tags:
+        - answer
+      summary: Find all answers
+      operationId: get_answer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data: 
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/answer'
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+    post:
+      tags:
+        - answer
+      summary: Create new answer
+      operationId: post_answer
+      requestBody:
+        description: Created answer
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/answer_without_id'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error - Wrong testid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+  /answer/{answerid}:
+    get:
+      tags:
+        - answer
+      summary: Find answer by answerid
+      operationId: get_answer_index
+      parameters:
+        - name: answerid
+          in: path
+          description: Id of answer
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/answer'
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+    put:
+      tags:
+        - answer
+      summary: Update answer by answerid
+      operationId: put_answer_index
+      parameters:
+        - name: answerid
+          in: path
+          description: Id of answer
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Updated answer or some answer attributes
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/answer_without_id'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error - Wrong testid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+    delete:
+      tags:
+        - answer
+      summary: Delete answer by answerd
+      operationId: delete_answer_index
+      parameters:
+        - name: answerid
+          in: path
+          description: Id of answer
           required: true
           schema:
             type: integer
@@ -1510,6 +1755,33 @@ components:
         content:
           type: string
           example: Содержание вопроса
+    answer:
+      type: object
+      properties:
+        answerid:
+          type: integer
+          example: 1
+        questionid:
+          type: integer
+          example: 1
+        content:
+          type: string
+          example: Ответ
+        correct:
+          type: boolean
+          example: true
+    answer_without_id:
+      type: object
+      properties:
+        questionid:
+          type: integer
+          example: 1
+        content:
+          type: string
+          example: Ответ
+        correct:
+          type: boolean
+          example: true
   requestBodies:
     user:
       description: User object
