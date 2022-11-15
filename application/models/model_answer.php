@@ -10,10 +10,10 @@ class Model_Answer extends Model {
 	 */
 	public function get_answer(): array {
 		$mysqli = Session::get_sql_connection();
-		$users = $mysqli->query('SELECT * FROM answer');
+		$answers = $mysqli->query('SELECT * FROM answer');
 		$response = array();
-		while ($user = $users->fetch_assoc()) {
-			$response[] = $user;
+		while ($answer = $answers->fetch_assoc()) {
+			$response[] = $answer;
 		}
 		return array(
 			'success' => 'true',
@@ -34,8 +34,8 @@ class Model_Answer extends Model {
 		if (!$stmt->execute()) {
 			throw new Exception(500);
 		}
-		$users = $stmt->get_result();
-		$response = $users->fetch_assoc();
+		$answer = $stmt->get_result();
+		$response = $answer->fetch_assoc();
 		return array(
 			'success' => 'true',
 			'data' => $response
@@ -55,7 +55,7 @@ class Model_Answer extends Model {
 		foreach ($json as $key => $value) {
 			if (($key == 'questionid' && is_numeric($value)) ||
 				($key == 'content' && preg_match($content_pattern, $value)) ||
-				($key == 'correct' && is_bool($value))) {
+				($key == 'correct' && (is_bool($value) || is_numeric($value)))) {
 				continue;
 			}
 			else {
@@ -81,7 +81,7 @@ class Model_Answer extends Model {
 		}
 		$mysqli = Session::get_sql_connection();
 		$stmt = $mysqli->prepare('INSERT INTO answer (questionid, content, correct) VALUES (?, ?, ?)');
-		$stmt->bind_param('sis', $request['questionid'], $request['content'], $request['correct']);
+		$stmt->bind_param('ssi', $request['questionid'], $request['content'], $request['correct']);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
 		}

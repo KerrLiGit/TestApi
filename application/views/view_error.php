@@ -1,3 +1,3 @@
 <?php
-//header('HTTP/1.1 ' . $code);
+http_response_code($json['error']['code']);
 echo json_encode($json, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);

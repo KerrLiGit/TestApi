@@ -9,5 +9,9 @@ require_once 'addon/api.php';
 try {
 	Route::start();
 } catch (Exception $e) {
-	header('Location: http://' . $_SERVER['HTTP_HOST'] . '/error/' . $e->getMessage());
+	//header('Location: ' . $_SERVER['HTTP_HOST'] . '/error/' . $e->getMessage());
+	require_once 'controllers/controller_error.php';
+	require_once 'models/model_error.php';
+	$controller = new Controller_Error();
+	$controller->action_index($e->getMessage());
 }

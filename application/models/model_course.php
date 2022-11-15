@@ -10,10 +10,10 @@ class Model_Course extends Model {
 	 */
 	public function get_course(): array {
 		$mysqli = Session::get_sql_connection();
-		$users = $mysqli->query('SELECT * FROM course');
+		$courses = $mysqli->query('SELECT * FROM course');
 		$response = array();
-		while ($user = $users->fetch_assoc()) {
-			$response[] = $user;
+		while ($course = $courses->fetch_assoc()) {
+			$response[] = $course;
 		}
 		return array(
 			'success' => 'true',
@@ -34,8 +34,8 @@ class Model_Course extends Model {
 		if (!$stmt->execute()) {
 			throw new Exception(500);
 		}
-		$users = $stmt->get_result();
-		$response = $users->fetch_assoc();
+		$course = $stmt->get_result();
+		$response = $course->fetch_assoc();
 		return array(
 			'success' => 'true',
 			'data' => $response
