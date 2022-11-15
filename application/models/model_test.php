@@ -80,7 +80,7 @@ class Model_Test extends Model {
 			throw new Exception(400);
 		}
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('INSERT INTO test (name, courseid, number) VALUES (?, ?, ?)');
+		$stmt = $mysqli->prepare('INSERT INTO test (`name`, courseid, `number`) VALUES (?, ?, ?)');
 		$stmt->bind_param('sii', $request['name'], $request['courseid'], $request['number']);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
@@ -144,13 +144,13 @@ class Model_Test extends Model {
 	 */
 	public function generate($testid, $seed) {
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('SELECT courseid, name, number FROM test WHERE testid = ?');
+		$stmt = $mysqli->prepare('SELECT courseid, `name`, `number` FROM test WHERE testid = ?');
 		$stmt->bind_param('i', $testid);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
 		}
 		$test = $stmt->get_result()->fetch_assoc();
-		$stmt = $mysqli->prepare('SELECT questionid, name, content, type FROM question 
+		$stmt = $mysqli->prepare('SELECT questionid, `name`, content, `type` FROM question 
 										WHERE testid = ? ORDER BY RAND(?) LIMIT ?');
 		$stmt->bind_param('iii',$testid, $seed, $test['number']);
 		if (!$stmt->execute()) {

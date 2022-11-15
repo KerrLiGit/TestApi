@@ -162,10 +162,17 @@ class Model_Question extends Model {
 		$stmt->bind_param('i', $index);
 		if (!$stmt->execute()) throw new Exception(500);
 		$question = $stmt->get_result()->fetch_assoc();
+		if ($question == null) {
+			throw new Exception(400);
+		}
 		if ($question['type'] == 'text') {
 			return array(
 				'success' => 'true',
-				'data' => array()
+				'data' => array(
+					'name' => $question['name'],
+					'content' => $question['content'],
+					'type' => $question['type']
+				)
 			);
 		}
 		if ($question['type'] == 'radio') {
@@ -208,6 +215,109 @@ class Model_Question extends Model {
 				'content' => $question['content'],
 				'type' => $question['type'],
 				'answers' => $answers
+			)
+		);
+	}
+
+
+
+	/*
+	 * Check answers for question by questionid and seed
+	 * NOT TESTED!!!
+	 */
+	/**
+	 * @throws exception
+	 */
+	public function check($index, $seed = null):array {
+		$request = (array) json_decode(file_get_contents('php://input'));
+		if (is_array($request) && count($request) == 0) {
+			return array(
+				'success' => 'true',
+				'data' => array(
+					'score' => 0
+				)
+			);
+		}
+		if (empty($request) || !is_array($request) || ($request != null && !array_key_exists(0, $request))) {
+			throw new Exception(400);
+		}
+		$generated_question = $this->generate($index, $seed)['data'];
+		$mysqli = Session::get_sql_connection();
+		$stmt = $mysqli->prepare('SELECT score FROM questiontype WHERE `type` = ?');
+		$stmt->bind_param('s', $generated_question['type']);
+		if (!$stmt->execute()) {
+			throw new Exception(500);
+		}
+		$max_score = $stmt->get_result()->fetch_assoc()['score'];
+		$score = 0;
+		Route::addlog(print_r($generated_question, true));
+		if ($generated_question['type'] == 'radio') {
+			if (count($request) > 1) {
+				throw new Exception(400);
+			}
+			$stmt->prepare('SELECT correct FROM answer WHERE answerid = ?');
+			if (!array_key_exists('answerid', (array) $request[0])) {
+				throw new Exception(400);
+			}
+			$answerid = ((array) $request[0])['answerid'];
+			$stmt->bind_param('i', $answerid);
+			if (!$stmt->execute()) {
+				throw new Exception(500);
+			}
+			$correct = $stmt->get_result()->fetch_assoc()['correct'];
+			if ($correct) {
+				$score = $max_score;
+			}
+		}
+		else if ($generated_question['type'] == 'checkbox') {
+			$correct_cnt = 0;
+			foreach ($request as $answer) {
+				if (!array_key_exists('answerid', $answer)) {
+					throw new Exception(400);
+				}
+				$answerid = $answer['answerid'];
+				$stmt->prepare('SELECT correct FROM answers WHERE answerid = ?');
+				$stmt->bind_param('i', $answerid);
+				if (!$stmt->execute()) {
+					throw new Exception(500);
+				}
+				$correct = $stmt->get_result()->fetch_assoc()['correct'];
+				if ($correct) {
+					$correct_cnt++;
+				}
+				else {
+					$correct_cnt = 0;
+					break;
+				}
+			}
+			if ($correct_cnt == 0)
+				$score = 0;
+			else {
+				// проверить что при всез правильных ответах score будет равен max_score
+				$score = round($max_score * (count($request) / $correct_cnt));
+			}
+		}
+		else if ($generated_question['type'] == 'text') {
+			if (!array_key_exists('content', (array) $request[0])) {
+				throw new Exception(400);
+			}
+			$content = ((array) $request[0])['content'];
+			$stmt = $mysqli->prepare('SELECT correct FROM answer WHERE content = ?');
+			$stmt->bind_param('s', $content);
+			if (!$stmt->execute()) {
+				throw new Exception(400);
+			}
+			$result = $stmt->get_result();
+			if ($correct = $result->fetch_assoc()['correct']) {
+				if ($correct) {
+					$score = $max_score;
+				}
+			}
+		}
+		return array(
+			'success' => 'true',
+			'data' => array(
+				'score' => $score
 			)
 		);
 	}
