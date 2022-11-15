@@ -10,10 +10,10 @@ class Model_Group extends Model {
 	 */
 	public function get_group(): array {
 		$mysqli = Session::get_sql_connection();
-		$users = $mysqli->query('SELECT * FROM `group`');
+		$groups = $mysqli->query('SELECT * FROM `group`');
 		$response = array();
-		while ($user = $users->fetch_assoc()) {
-			$response[] = $user;
+		while ($group = $groups->fetch_assoc()) {
+			$response[] = $group;
 		}
 		return array(
 			'success' => 'true',
@@ -34,8 +34,8 @@ class Model_Group extends Model {
 		if (!$stmt->execute()) {
 			throw new Exception(500);
 		}
-		$users = $stmt->get_result();
-		$response = $users->fetch_assoc();
+		$group = $stmt->get_result();
+		$response = $group->fetch_assoc();
 		return array(
 			'success' => 'true',
 			'data' => $response

@@ -10,10 +10,10 @@ class Model_Test extends Model {
 	 */
 	public function get_test(): array {
 		$mysqli = Session::get_sql_connection();
-		$users = $mysqli->query('SELECT * FROM test');
+		$tests = $mysqli->query('SELECT * FROM test');
 		$response = array();
-		while ($user = $users->fetch_assoc()) {
-			$response[] = $user;
+		while ($test = $tests->fetch_assoc()) {
+			$response[] = $test;
 		}
 		return array(
 			'success' => 'true',
@@ -34,8 +34,8 @@ class Model_Test extends Model {
 		if (!$stmt->execute()) {
 			throw new Exception(500);
 		}
-		$users = $stmt->get_result();
-		$response = $users->fetch_assoc();
+		$test = $stmt->get_result();
+		$response = $test->fetch_assoc();
 		return array(
 			'success' => 'true',
 			'data' => $response
@@ -133,6 +133,45 @@ class Model_Test extends Model {
 		}
 		return array(
 			'success' => 'true'
+		);
+	}
+
+	/*
+	 * Generate answers for question by testid and seed
+	 */
+	/**
+	 * @throws Exception
+	 */
+	public function generate($testid, $seed) {
+		$mysqli = Session::get_sql_connection();
+		$stmt = $mysqli->prepare('SELECT courseid, name, number FROM test WHERE testid = ?');
+		$stmt->bind_param('i', $testid);
+		if (!$stmt->execute()) {
+			throw new Exception(500);
+		}
+		$test = $stmt->get_result()->fetch_assoc();
+		$stmt = $mysqli->prepare('SELECT questionid, name, content, type FROM question 
+										WHERE testid = ? ORDER BY RAND(?) LIMIT ?');
+		$stmt->bind_param('iii',$testid, $seed, $test['number']);
+		if (!$stmt->execute()) {
+			throw new Exception(500);
+		}
+		$result = $stmt->get_result();
+		$questions = array();
+		while ($question = $result->fetch_assoc()) {
+			require_once 'model_question.php';
+			$model_question = new Model_Question();
+			$question['answers'] = $model_question->generate($question['questionid'], $seed)['data'];
+			$questions[] = $question;
+		}
+		return array(
+			'success' => 'true',
+			'data' => array(
+				'name' => $test['name'],
+				'courseid' => $test['courseid'],
+				'number' => $test['number'],
+				'questions' => $questions
+			)
 		);
 	}
 

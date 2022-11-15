@@ -56,14 +56,11 @@ class Route {
 			$i++;
 		}
 
-		// получаем дополнительные параметры (не должны использоваться!)
+		// получаем дополнительные параметры
 		$params = array();
 		while (array_key_exists($i, $routes) && !empty($routes[$i])) {
 			$params[] = $routes[$i];
 			$i++;
-		}
-		if (!empty($params)) {
-			throw new Exception(400);
 		}
 
 		// добавляем префиксы
@@ -97,12 +94,11 @@ class Route {
 
 		if (method_exists($controller, $action)) {
 			// вызываем действие контроллера
-			$controller->$action($index);
+			$controller->$action($index, $params);
 		}
 		else {
 			throw new Exception(404);
 		}
-
 	}
 
 }
