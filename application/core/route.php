@@ -6,7 +6,7 @@ class Route {
 	 * Метод для тестового вывода в файл !log.php
 	 */
 	static function addlog($str) {
-		$tempdir = 'c:\temp'; // если есть такой каталог
+		$tempdir = 'C:\web\www\TestApi.local'; // если есть такой каталог
 		if (!file_exists($tempdir)) // иначе
 			$tempdir = sys_get_temp_dir(); // системный - c:\windows\temp
 		$logfile = $tempdir .'\!log.txt';
