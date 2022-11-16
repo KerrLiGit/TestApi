@@ -235,7 +235,136 @@ class Model_Question extends Model {
 		);
 	}
 
+	/*
+	 * Counting score in question (type - radio) by user answers
+	 */
+	/**
+	 * @throws exception
+	 */
+	private function check_radio($max_score, $answers): int {
+		foreach ($answers as $answer) {
+			$answer = (array) $answer;
+			if (array_key_exists('answerid', $answer) && is_numeric($answer['answerid'])) {
+				continue;
+			}
+			throw new Exception(400);
+		}
+		if (count($answers) > 1) {
+			throw new Exception(400);
+		}
+		$mysqli = Session::get_sql_connection();
+		$stmt = $mysqli->prepare('SELECT correct FROM answer WHERE answerid = ?');
+		$answerid = ((array) $answers[0])['answerid'];
+		$stmt->bind_param('i', $answerid);
+		if (!$stmt->execute()) {
+			throw new Exception(500);
+		}
+		$correct = $stmt->get_result()->fetch_assoc()['correct'];
+		if ($correct) {
+			return $max_score;
+		}
+		return 0;
+	}
 
+	/*
+	 * Returns count of correct answers in generated question by questionid and seed
+	 */
+	/**
+	 * @throws Exception
+	 */
+	private function count_correct_answers($questionid, $seed) {
+		$mysqli = Session::get_sql_connection();
+		$limit = $mysqli->query(
+			'SELECT `limit` FROM questiontype WHERE `type` = "checkbox"')->fetch_assoc()['limit'];
+		$stmt = $mysqli->prepare('
+			WITH
+			correct_answer AS (
+    			SELECT answerid, content, correct FROM answer
+    			WHERE questionid = ? AND correct = true
+    			ORDER BY RAND(?) LIMIT 1
+			),
+			incorrect_answer AS (
+    			SELECT answerid, content, correct FROM answer
+    			WHERE questionid = ? AND answerid NOT IN
+        			(SELECT answerid FROM correct_answer)
+    			ORDER BY RAND(?) LIMIT ?
+			)
+			SELECT SUM(cnt) AS correct_cnt FROM (
+    			SELECT COUNT(*) AS cnt FROM correct_answer WHERE correct = true
+   				UNION ALL
+   				SELECT COUNT(*) AS cnt FROM incorrect_answer WHERE correct = true
+    			ORDER BY RAND(?)
+			) AS cnt_answer');
+		$stmt->bind_param('iiiiii', $questionid, $seed, $questionid, $seed, $limit, $seed);
+		if (!$stmt->execute()) {
+			throw new Exception(500);
+		}
+		return $stmt->get_result()->fetch_assoc()['correct_cnt'];
+	}
+
+	/*
+	 * Counting score in question (type - checkbox) by user answers
+	 */
+	/**
+	 * @throws Exception
+	 */
+	private function check_checkbox($max_score, $request, $index, $seed): int {
+		foreach ($request as $answer) {
+			$answer = (array) $answer;
+			if (array_key_exists('answerid', $answer) && is_numeric($answer['answerid'])) {
+				continue;
+			}
+			throw new Exception(400);
+		}
+		$mysqli = Session::get_sql_connection();
+		$stmt = $mysqli->prepare('SELECT correct FROM answer WHERE answerid = ?');
+		foreach ($request as $answer) {
+			$answer = (array)$answer;
+			$stmt->bind_param('i', $answer['answerid']);
+			if (!$stmt->execute()) {
+				throw new Exception(500);
+			}
+			$correct = $stmt->get_result()->fetch_assoc()['correct'];
+			if (!$correct) {
+				return 0;
+			}
+		}
+		$correct_cnt = $this->count_correct_answers($index, $seed);
+		return (int) round($max_score * count($request) / (float) $correct_cnt);
+	}
+
+	/*
+	 * Counting score in question (type - text) by user answers
+	 */
+	/**
+	 * @throws Exception
+	 */
+	private function check_text($max_score, $request) {
+		foreach ($request as $answer) {
+			$answer = (array) $answer;
+			if (array_key_exists('content', $answer) && is_numeric($answer['content'])) {
+				continue;
+			}
+			throw new Exception(400);
+		}
+		if (count($request) > 1) {
+			throw new Exception(400);
+		}
+		$content = ((array) $request[0])['content'];
+		$mysqli = Session::get_sql_connection();
+		$stmt = $mysqli->prepare('SELECT correct FROM answer WHERE content = ?');
+		$stmt->bind_param('s', $content);
+		if (!$stmt->execute()) {
+			throw new Exception(400);
+		}
+		$result = $stmt->get_result();
+		if ($correct = $result->fetch_assoc()['correct']) {
+			if ($correct) {
+				return $max_score;
+			}
+		}
+		return 0;
+	}
 
 	/*
 	 * Check answers for question by questionid and seed
@@ -243,8 +372,10 @@ class Model_Question extends Model {
 	/**
 	 * @throws exception
 	 */
-	public function check($index, $seed = null):array {
-		$request = (array) json_decode(file_get_contents('php://input'));
+	public function check($index, $seed = null, $request = null):array {
+		if ($request == null) {
+			$request = (array)json_decode(file_get_contents('php://input'));
+		}
 		if (empty($request)) {
 			throw new Exception(400);
 		}
@@ -257,13 +388,9 @@ class Model_Question extends Model {
 			);
 		}
 		$request = array_unique($request, SORT_REGULAR);
-		$answer = (array) $request[0];
-		if ($answer['questionid'] != $index) {
-			throw new Exception(400);
-		}
 		$mysqli = Session::get_sql_connection();
 		$stmt = $mysqli->prepare('SELECT `name`, `type` FROM question WHERE questionid = ?');
-		$stmt->bind_param('i', $answer['questionid']);
+		$stmt->bind_param('i', $index);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
 		}
@@ -276,95 +403,13 @@ class Model_Question extends Model {
 		$max_score = $stmt->get_result()->fetch_assoc()['score'];
 		$score = 0;
 		if ($question['type'] == 'radio') {
-			if (count($request) > 1) {
-				throw new Exception(400);
-			}
-			$stmt->prepare('SELECT correct FROM answer WHERE answerid = ?');
-			if (!array_key_exists('answerid', (array) $request[0])) {
-				throw new Exception(400);
-			}
-			$answerid = ((array) $request[0])['answerid'];
-			$stmt->bind_param('i', $answerid);
-			if (!$stmt->execute()) {
-				throw new Exception(500);
-			}
-			$correct = $stmt->get_result()->fetch_assoc()['correct'];
-			if ($correct) {
-				$score = $max_score;
-			}
+			$score = $this->check_radio($max_score, $request);
 		}
 		else if ($question['type'] == 'checkbox') {
-			$incorrect_answer = false;
-			foreach ($request as $answer) {
-				$answer = (array)$answer;
-				if (!array_key_exists('answerid', $answer) ||
-					(array_key_exists('questionid', $answer) && $answer['questionid'] != $index)) {
-					throw new Exception(400);
-				}
-				$stmt->prepare('SELECT correct FROM answer WHERE answerid = ?');
-				$stmt->bind_param('i', $answer['answerid']);
-				if (!$stmt->execute()) {
-					throw new Exception(500);
-				}
-				$correct = $stmt->get_result()->fetch_assoc()['correct'];
-				if (!$correct) {
-					$incorrect_answer = true;
-					break;
-				}
-			}
-			if ($incorrect_answer)
-				$score = 0;
-			else {
-				$stmt = $mysqli->prepare('SELECT `limit` FROM questiontype WHERE `type` = ?');
-				$stmt->bind_param('s', $question['type']);
-				if (!$stmt->execute()) {
-					throw new Exception(500);
-				}
-				$limit = $stmt->get_result()->fetch_assoc()['limit'];
-				$stmt = $mysqli->prepare('
-				WITH
-				correct_answer AS (
-    				SELECT answerid, content, correct FROM answer
-    				WHERE questionid = ? AND correct = true
-    				ORDER BY RAND(?) LIMIT 1
-				),
-				incorrect_answer AS (
-    				SELECT answerid, content, correct FROM answer
-    				WHERE questionid = ? AND answerid NOT IN
-        				(SELECT answerid FROM correct_answer)
-    				ORDER BY RAND(?) LIMIT ?
-				)
-				SELECT SUM(cnt) AS correct_cnt FROM (
-    				SELECT COUNT(*) AS cnt FROM correct_answer WHERE correct = true
-   					UNION ALL
-   					SELECT COUNT(*) AS cnt FROM incorrect_answer WHERE correct = true
-    				ORDER BY RAND(?)
-				) AS cnt_answer');
-				$stmt->bind_param('iiiiii',
-					$answer['questionid'], $seed, $answer['questionid'], $seed, $limit, $seed);
-				if (!$stmt->execute()) {
-					throw new Exception(500);
-				}
-				$correct_cnt = $stmt->get_result()->fetch_assoc()['correct_cnt'];
-				$score = round($max_score * (count($request) / (float) $correct_cnt));
-			}
+			$score = $this->check_checkbox($max_score, $request, $index, $seed);
 		}
 		else if ($question['type'] == 'text') {
-			if (!array_key_exists('content', (array) $request[0])) {
-				throw new Exception(400);
-			}
-			$content = ((array) $request[0])['content'];
-			$stmt = $mysqli->prepare('SELECT correct FROM answer WHERE content = ?');
-			$stmt->bind_param('s', $content);
-			if (!$stmt->execute()) {
-				throw new Exception(400);
-			}
-			$result = $stmt->get_result();
-			if ($correct = $result->fetch_assoc()['correct']) {
-				if ($correct) {
-					$score = $max_score;
-				}
-			}
+			$score = $this->check_text($max_score, $request);
 		}
 		return array(
 			'success' => 'true',

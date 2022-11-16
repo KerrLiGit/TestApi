@@ -801,6 +801,156 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500'
+  /test/{testid}/generate/{seed}:
+    post:
+      tags:
+        - test
+      summary: Generate test - questions and answers
+      operationId: generate_test
+      parameters:
+        - name: testid
+          in: path
+          description: Id of test
+          required: true
+          schema:
+            type: integer
+        - name: seed
+          in: path
+          description: Seed for generating (optional)
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        example: "Название теста"
+                      courseid:
+                        type: integer
+                        example: 2
+                      number:
+                        type: integer
+                        example: 1
+                      questions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/question_with_answers'
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+  /test/{testid}/check/{seed}:
+    post:
+      tags:
+        - test
+      summary: Check answers in questions of test and counting score
+      operationId: check_test
+      parameters:
+        - name: testid
+          in: path
+          description: Id of test
+          required: true
+          schema:
+            type: integer
+        - name: seed
+          in: path
+          description: Seed for generating (optional)
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Correct answers in user opinion - "answerid" for "radio" or "checkbox" type and "content" for "text" type
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  questionid:
+                    type: integer
+                    example: 1
+                  answers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        answerid:
+                          type: integer
+                          example: 1
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      score:
+                        type: integer
+                        example: 2
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
   /course:
     get:
       tags:
@@ -1339,6 +1489,134 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500'
+  /question/{questionid}/generate/{seed}:
+    post:
+      tags:
+        - question
+      summary: Generate quesion and answers
+      operationId: generate_question
+      parameters:
+        - name: questionid
+          in: path
+          description: Id of question
+          required: true
+          schema:
+            type: integer
+        - name: seed
+          in: path
+          description: Seed for generating (optional)
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/question_with_answers'
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+  /question/{questionid}/check/{seed}:
+    post:
+      tags:
+        - question
+      summary: Check answers in question and counting score
+      operationId: check_question
+      parameters:
+        - name: questionid
+          in: path
+          description: Id of question
+          required: true
+          schema:
+            type: integer
+        - name: seed
+          in: path
+          description: Seed for generating (optional)
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Correct answers in user opinion - "answerid" for "radio" or "checkbox" type and "content" for "text" type
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  answerid:
+                    type: integer
+                    example: 1
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      score:
+                        type: integer
+                        example: 2
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
   /answer:
     get:
       tags:
@@ -1743,6 +2021,9 @@ components:
         content:
           type: string
           example: Содержание вопроса
+        type:
+          type: string
+          example: radio
     question_without_id:
       type: object
       properties:
@@ -1755,6 +2036,9 @@ components:
         content:
           type: string
           example: Содержание вопроса
+        type:
+          type: string
+          example: radio
     answer:
       type: object
       properties:
@@ -1782,6 +2066,29 @@ components:
         correct:
           type: boolean
           example: true
+    question_with_answers:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Вопрос"
+        content:
+          type: string
+          example: "Содержание вопроса"
+        type:
+          type: string
+          example: "radio"
+        answers:
+          type: array
+          items:
+            type: object
+            properties:
+              answerid:
+                type: integer
+                example: 1
+              content:
+                type: string
+                example: "Один из ответов на вопрос"
   requestBodies:
     user:
       description: User object
