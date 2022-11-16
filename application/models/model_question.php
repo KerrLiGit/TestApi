@@ -275,7 +275,7 @@ class Model_Question extends Model {
 	private function count_correct_answers($questionid, $seed) {
 		$mysqli = Session::get_sql_connection();
 		$limit = $mysqli->query(
-			'SELECT `limit` FROM questiontype WHERE `type` = "checkbox"')->fetch_assoc()['limit'];
+			'SELECT `limit` FROM questiontype WHERE `type` = "checkbox"')->fetch_assoc()['limit'] - 1;
 		$stmt = $mysqli->prepare('
 			WITH
 			correct_answer AS (
@@ -289,7 +289,7 @@ class Model_Question extends Model {
         			(SELECT answerid FROM correct_answer)
     			ORDER BY RAND(?) LIMIT ?
 			)
-			SELECT SUM(cnt) AS correct_cnt FROM (
+			SELECT SUM(cnt) AS sum FROM (
     			SELECT COUNT(*) AS cnt FROM correct_answer WHERE correct = true
    				UNION ALL
    				SELECT COUNT(*) AS cnt FROM incorrect_answer WHERE correct = true
@@ -299,7 +299,7 @@ class Model_Question extends Model {
 		if (!$stmt->execute()) {
 			throw new Exception(500);
 		}
-		return $stmt->get_result()->fetch_assoc()['correct_cnt'];
+		return $stmt->get_result()->fetch_assoc()['sum'];
 	}
 
 	/*
@@ -414,7 +414,8 @@ class Model_Question extends Model {
 		return array(
 			'success' => 'true',
 			'data' => array(
-				'score' => $score
+				'score' => $score,
+				'max_score' => $max_score
 			)
 		);
 	}

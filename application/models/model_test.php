@@ -181,12 +181,12 @@ class Model_Test extends Model {
 	/**
 	 * @throws Exception
 	 */
-	public function check($index, $seed = null) {
-		$request = (array) json_decode(file_get_contents('php://input'));
-		if (empty($request)) {
+	public function check($testid, $seed = null) {
+		$questions = (array) json_decode(file_get_contents('php://input'));
+		if (empty($questions)) {
 			throw new Exception(400);
 		}
-		else if (is_array($request) && count($request) == 0) {
+		else if (is_array($questions) && count($questions) == 0) {
 			return array(
 				'success' => 'true',
 				'data' => array(
@@ -194,11 +194,48 @@ class Model_Test extends Model {
 				)
 			);
 		}
-
-		foreach ($request as $question) {
-
+		foreach ($questions as $question) {
+			$question = (array) $question;
+			if (array_key_exists('questionid', $question) &&
+			    array_key_exists('answers', $question)) {
+				continue;
+			}
+			throw new Exception(400);
 		}
-
+		$score = 0;
+		require_once 'model_question.php';
+		foreach ($questions as $question) {
+			$question = (array) $question;
+			$mysqli = Session::get_sql_connection();
+			$stmt = $mysqli->prepare('SELECT testid FROM question WHERE questionid = ?');
+			$stmt->bind_param('i', $question['questionid']);
+			if (!$stmt->execute()) {
+				throw new Exception(500);
+			}
+			$question_testid = $stmt->get_result()->fetch_assoc()['testid'];
+			if ($question_testid == $testid) {
+				$model = new Model_Question();
+				$score += $model->check($question['questionid'], $seed, $question['answers'])['data']['score'];
+			}
+		}
+		$max_score = 0;
+		$test = $this->generate($testid, $score)['data'];
+		$mysqli = Session::get_sql_connection();
+		$stmt = $mysqli->prepare('SELECT score FROM questiontype WHERE type = ?');
+		foreach ($test['questions'] as $question) {
+			$stmt->bind_param('s', $question['type']);
+			if (!$stmt->execute()) {
+				throw new Exception(500);
+			}
+			$max_score += $stmt->get_result()->fetch_assoc()['score'];
+		}
+		return array(
+			'success' => 'true',
+			'data' => array(
+				'score' => $score,
+				'max_score' => $max_score
+			)
+		);
 	}
 
 }
