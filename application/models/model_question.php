@@ -171,32 +171,48 @@ class Model_Question extends Model {
 				'data' => array(
 					'name' => $question['name'],
 					'content' => $question['content'],
-					'type' => $question['type']
+					'type' => $question['type'],
+					'answers' => array()
 				)
 			);
 		}
 		if ($question['type'] == 'radio') {
 			$stmt = $mysqli->prepare('
-				(
-    				(SELECT answerid, content FROM answer 
-    				  WHERE questionid = ? AND correct = true LIMIT 1)
-    				UNION
-    				(SELECT answerid, content FROM answer 
-    				  WHERE questionid = ? AND correct = false ORDER BY RAND(?) LIMIT ?)
+				WITH
+				correct_answer AS (
+    				SELECT answerid, content FROM answer
+    				WHERE questionid = ? AND correct = true
+    				LIMIT 1
+				),
+				incorrect_answer AS (
+    				SELECT answerid, content FROM answer
+    				WHERE questionid = ? AND correct = false
+    				ORDER BY RAND(?) LIMIT ?
 				)
+				SELECT answerid, content FROM correct_answer
+				UNION
+				SELECT answerid, content FROM incorrect_answer
 				ORDER BY RAND(?)'
 			);
 		}
 		else if ($question['type'] == 'checkbox') {
 			$stmt = $mysqli->prepare('
-				(
-					(SELECT answerid, content FROM answer 
-					  WHERE questionid = ? AND correct = true LIMIT 1)
-    				UNION 
-    				(SELECT answerid, content FROM answer 
-    				  WHERE questionid = ? ORDER BY RAND(?) LIMIT ?)
-    			) 
-    			ORDER BY RAND(?)'
+				WITH
+				correct_answer AS (
+				    SELECT answerid, content FROM answer
+				    WHERE questionid = ? AND correct = true
+    				LIMIT 1
+				),
+				incorrect_answer AS (
+    				SELECT answerid, content FROM answer
+    				WHERE questionid = ? AND answerid NOT IN
+        				(SELECT answerid FROM correct_answer)
+    				ORDER BY RAND(?) LIMIT ?
+				)
+				SELECT answerid, content FROM correct_answer
+				UNION
+				SELECT answerid, content FROM incorrect_answer
+				ORDER BY RAND(?)'
 			);
 		}
 		$limit = $limit[$question['type']] - 1;
@@ -223,14 +239,16 @@ class Model_Question extends Model {
 
 	/*
 	 * Check answers for question by questionid and seed
-	 * NOT TESTED!!!
 	 */
 	/**
 	 * @throws exception
 	 */
 	public function check($index, $seed = null):array {
 		$request = (array) json_decode(file_get_contents('php://input'));
-		if (is_array($request) && count($request) == 0) {
+		if (empty($request)) {
+			throw new Exception(400);
+		}
+		else if (is_array($request) && count($request) == 0) {
 			return array(
 				'success' => 'true',
 				'data' => array(
@@ -238,20 +256,25 @@ class Model_Question extends Model {
 				)
 			);
 		}
-		if (empty($request) || !is_array($request) || ($request != null && !array_key_exists(0, $request))) {
+		$answer = (array) $request[0];
+		if ($answer['questionid'] != $index) {
 			throw new Exception(400);
 		}
-		$generated_question = $this->generate($index, $seed)['data'];
 		$mysqli = Session::get_sql_connection();
+		$stmt = $mysqli->prepare('SELECT `name`, `type` FROM question WHERE questionid = ?');
+		$stmt->bind_param('i', $answer['questionid']);
+		if (!$stmt->execute()) {
+			throw new Exception(500);
+		}
+		$question = $stmt->get_result()->fetch_assoc();
 		$stmt = $mysqli->prepare('SELECT score FROM questiontype WHERE `type` = ?');
-		$stmt->bind_param('s', $generated_question['type']);
+		$stmt->bind_param('s', $question['type']);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
 		}
 		$max_score = $stmt->get_result()->fetch_assoc()['score'];
 		$score = 0;
-		Route::addlog(print_r($generated_question, true));
-		if ($generated_question['type'] == 'radio') {
+		if ($question['type'] == 'radio') {
 			if (count($request) > 1) {
 				throw new Exception(400);
 			}
@@ -269,35 +292,63 @@ class Model_Question extends Model {
 				$score = $max_score;
 			}
 		}
-		else if ($generated_question['type'] == 'checkbox') {
-			$correct_cnt = 0;
+		else if ($question['type'] == 'checkbox') {
+			$incorrect_answer = false;
 			foreach ($request as $answer) {
-				if (!array_key_exists('answerid', $answer)) {
+				$answer = (array)$answer;
+				if (!array_key_exists('answerid', $answer) ||
+					(array_key_exists('questionid', $answer) && $answer['questionid'] != $index)) {
 					throw new Exception(400);
 				}
-				$answerid = $answer['answerid'];
-				$stmt->prepare('SELECT correct FROM answers WHERE answerid = ?');
-				$stmt->bind_param('i', $answerid);
+				$stmt->prepare('SELECT correct FROM answer WHERE answerid = ?');
+				$stmt->bind_param('i', $answer['answerid']);
 				if (!$stmt->execute()) {
 					throw new Exception(500);
 				}
 				$correct = $stmt->get_result()->fetch_assoc()['correct'];
-				if ($correct) {
-					$correct_cnt++;
-				}
-				else {
-					$correct_cnt = 0;
+				if (!$correct) {
+					$incorrect_answer = true;
 					break;
 				}
 			}
-			if ($correct_cnt == 0)
+			if ($incorrect_answer)
 				$score = 0;
 			else {
-				// проверить что при всез правильных ответах score будет равен max_score
-				$score = round($max_score * (count($request) / $correct_cnt));
+				$stmt = $mysqli->prepare('SELECT `limit` FROM questiontype WHERE `type` = ?');
+				$stmt->bind_param('s', $question['type']);
+				if (!$stmt->execute()) {
+					throw new Exception(500);
+				}
+				$limit = $stmt->get_result()->fetch_assoc()['limit'];
+				$stmt = $mysqli->prepare('
+				WITH
+				correct_answer AS (
+    				SELECT answerid, content, correct FROM answer
+    				WHERE questionid = ? AND correct = true
+    				ORDER BY RAND(?) LIMIT 1
+				),
+				incorrect_answer AS (
+    				SELECT answerid, content, correct FROM answer
+    				WHERE questionid = ? AND answerid NOT IN
+        				(SELECT answerid FROM correct_answer)
+    				ORDER BY RAND(?) LIMIT ?
+				)
+				SELECT SUM(cnt) AS correct_cnt FROM (
+    				SELECT COUNT(*) AS cnt FROM correct_answer WHERE correct = true
+   					UNION ALL
+   					SELECT COUNT(*) AS cnt FROM incorrect_answer WHERE correct = true
+    				ORDER BY RAND(?)
+				) AS cnt_answer');
+				$stmt->bind_param('iiiiii',
+					$answer['questionid'], $seed, $answer['questionid'], $seed, $limit, $seed);
+				if (!$stmt->execute()) {
+					throw new Exception(500);
+				}
+				$correct_cnt = $stmt->get_result()->fetch_assoc()['correct_cnt'];
+				$score = round($max_score * (count($request) / (float) $correct_cnt));
 			}
 		}
-		else if ($generated_question['type'] == 'text') {
+		else if ($question['type'] == 'text') {
 			if (!array_key_exists('content', (array) $request[0])) {
 				throw new Exception(400);
 			}
