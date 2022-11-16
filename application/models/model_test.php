@@ -175,30 +175,4 @@ class Model_Test extends Model {
 		);
 	}
 
-	/*
-	 * Check answers for questions in test by testid and seed
-	 */
-	/**
-	 * @throws Exception
-	 */
-	public function check($index, $seed = null) {
-		$request = (array) json_decode(file_get_contents('php://input'));
-		if (empty($request)) {
-			throw new Exception(400);
-		}
-		else if (is_array($request) && count($request) == 0) {
-			return array(
-				'success' => 'true',
-				'data' => array(
-					'score' => 0
-				)
-			);
-		}
-
-		foreach ($request as $question) {
-
-		}
-
-	}
-
 }
