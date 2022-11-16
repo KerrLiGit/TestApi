@@ -256,6 +256,7 @@ class Model_Question extends Model {
 				)
 			);
 		}
+		$request = array_unique($request, SORT_REGULAR);
 		$answer = (array) $request[0];
 		if ($answer['questionid'] != $index) {
 			throw new Exception(400);
