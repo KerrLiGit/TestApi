@@ -143,4 +143,120 @@ class Model_User extends Model {
 		);
 	}
 
+	/*
+	 * Checking if json is profile
+	 * Field all_attributes is boolean
+	 * If all_attributes is true, json must have all profile attributes, else some attributes may be skipped
+	 */
+	/**
+	 * @throws exception
+	 */
+	private function is_profile($json, $all_attributes = true): bool {
+		foreach ($json as $key => $value) {
+			if (($key == 'userid' && is_numeric($value)) ||
+				($key == 'login' && is_string($value)) ||
+				($key == 'password' && is_string($value))) {
+				continue;
+			}
+			else {
+				return false;
+			}
+		}
+		if ($all_attributes) {
+			return count($json) == 3;
+		}
+		return true;
+	}
+
+	/*
+	 * User registration
+	 */
+	/**
+	 * @throws Exception
+	 */
+	public function login(): array {
+		$request = (array) json_decode(file_get_contents('php://input'));
+		if (empty($request) || !self::is_profile($request, true)) {
+			throw new Exception(400);
+		}
+		$mysqli = Session::get_sql_connection();
+		$stmt = $mysqli->prepare('INSERT INTO profile (userid, login, password) VALUES (?, ?, MD5(?))');
+		$stmt->bind_param('iss', $request['userid'], $request['login'], $request['password']);
+		if (!$stmt->execute()) {
+			throw new Exception(500);
+		}
+		return array(
+			'success' => 'true'
+		);
+	}
+
+	/*
+	 * Checking if json is profile
+	 * Field all_attributes is boolean
+	 * If all_attributes is true, json must have all profile attributes, else some attributes may be skipped
+	 */
+	/**
+	 * @throws exception
+	 */
+	private function is_login_password($json, $all_attributes = true): bool {
+		foreach ($json as $key => $value) {
+			if (($key == 'login' && is_string($value)) ||
+				($key == 'password' && is_string($value))) {
+				continue;
+			}
+			else {
+				return false;
+			}
+		}
+		if ($all_attributes) {
+			return count($json) == 2;
+		}
+		return true;
+	}
+
+	/*
+	 * User authorisation
+	 */
+	/**
+	 * @throws Exception
+	 */
+	public function signin():array {
+		$request = (array) json_decode(file_get_contents('php://input'));
+		if (empty($request) || !self::is_login_password($request, true)) {
+			throw new Exception(400);
+		}
+		$mysqli = Session::get_sql_connection();
+		$stmt = $mysqli->prepare('SELECT userid FROM profile WHERE login = ? AND password = MD5(?)');
+		$stmt->bind_param('ss', $request['login'], $request['password']);
+		if (!$stmt->execute()) {
+			throw new Exception(500);
+		}
+		$userid = $stmt->get_result()->fetch_assoc()['userid'];
+		if ($userid != null) {
+			Session::safe_session_start();
+			if (isset($_SESSION) && array_key_exists('userid', $_SESSION)) {
+				unset($_SESSION['userid']);
+			}
+			$_SESSION['userid'] = $userid;
+			$message = 'Succesful signin';
+		}
+		else $message = 'Wrong login or password';
+		return array(
+			'success' => 'true',
+			'data' => array(
+				'message' => $message
+			)
+		);
+	}
+
+	/*
+	 * User signout
+	 */
+	public function signout(): array {
+		Session::safe_session_start();
+		if (isset($_SESSION) && array_key_exists('userid', $_SESSION)) {
+			unset($_SESSION['userid']);
+		}
+	}
+
 }

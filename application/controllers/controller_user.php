@@ -30,4 +30,49 @@ class Controller_User extends Controller {
 		$this->view->generate('view_api.php', 'view_api_template.php', $data);
 	}
 
+	/**
+	 * @throws exception
+	 */
+	function action_login($index = null) {
+		Api::auth();
+		if ($index == null) {
+			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
+				'post' => $this->model->login(),
+				default => throw new Exception(405)
+			};
+		}
+		else return;
+		$this->view->generate('view_api.php', 'view_api_template.php', $data);
+	}
+
+	/**
+	 * @throws exception
+	 */
+	function action_signin($index = null) {
+		Api::auth();
+		if ($index == null) {
+			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
+				'post' => $this->model->signin(),
+				default => throw new Exception(405)
+			};
+		}
+		else return;
+		$this->view->generate('view_api.php', 'view_api_template.php', $data);
+	}
+
+	/**
+	 * @throws exception
+	 */
+	function action_signout($index = null) {
+		Api::auth();
+		if ($index == null) {
+			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
+				'post' => $this->model->signout(),
+				default => throw new Exception(405)
+			};
+		}
+		else return;
+		$this->view->generate('view_api.php', 'view_api_template.php', $data);
+	}
+
 }
