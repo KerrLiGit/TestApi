@@ -35,9 +35,9 @@ class Controller_User extends Controller {
 	 */
 	function action_login($index = null) {
 		Api::auth();
-		if ($index == null) {
+		if ($index != null) {
 			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'post' => $this->model->login(),
+				'post' => $this->model->login($index),
 				default => throw new Exception(405)
 			};
 		}

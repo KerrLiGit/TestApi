@@ -263,6 +263,150 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500'
+  /user/{userid}/login:
+    post:
+      tags:
+        - user
+      summary: User registration  
+      operationId: login
+      parameters:
+        - name: userid
+          in: path
+          description: Id of user
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: New user login and password
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/profile'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+  /user/signin:
+    post:
+      tags:
+        - user
+      summary: User authorisation
+      operationId: signin
+      requestBody:
+        description: User login and password
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/profile'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error - Wrong login or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
+  /user/signout:
+    post:
+      tags:
+        - user
+      summary: Temporary user signout 
+      operationId: signout
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Wrong request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: No authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '403':
+          description: Wrong authorisation key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+        '500':
+          description: Server error - Wrong login or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500'
   /group:
     get:
       tags:
@@ -2089,6 +2233,15 @@ components:
               content:
                 type: string
                 example: "Один из ответов на вопрос"
+    profile:
+      type: object
+      properties:
+        login:
+          type: string
+          example: "user"
+        password:
+          type: string
+          example: "user"
   requestBodies:
     user:
       description: User object
