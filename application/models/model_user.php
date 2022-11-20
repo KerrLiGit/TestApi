@@ -9,8 +9,13 @@ class Model_User extends Model {
 	 * @throws Exception
 	 */
 	public function get_user(): array {
-		$mysqli = Session::get_sql_connection();
-		$users = $mysqli->query('SELECT * FROM `user`');
+		try {
+			$mysqli = Session::get_sql_connection();
+			$users = $mysqli->query('SELECT * FROM `user`');
+		}
+		catch (Exception $e) {
+			throw new Exception(500);
+		}
 		$response = array();
 		while ($user = $users->fetch_assoc()) {
 			$response[] = $user;
@@ -90,7 +95,13 @@ class Model_User extends Model {
 		$stmt = $mysqli->prepare('INSERT INTO `user` (name, `groupid`, role) VALUES (?, ?, ?)');
 		$stmt->bind_param('sss', $request['name'], $request['groupid'], $request['role']);
 		if (!$stmt->execute()) {
-			throw new Exception(500);
+			return array(
+				'success' => 'false',
+				'error' => array(
+					'code' => 200,
+					'message' => 'Wrong role or groupid'
+				)
+			);
 		}
 		return array(
 			'success' => 'true'
@@ -118,7 +129,13 @@ class Model_User extends Model {
 		$query = 'UPDATE `user` SET ' . implode(', ', $attributes) . ' WHERE userid = ' . $index;
 		$mysqli = Session::get_sql_connection();
 		if (!$mysqli->query($query)) {
-			throw new Exception(500);
+			return array(
+				'success' => 'false',
+				'error' => array(
+					'code' => 200,
+					'message' => 'Wrong some user attributes'
+				)
+			);
 		}
 		return array(
 			'success' => 'true'
@@ -153,53 +170,6 @@ class Model_User extends Model {
 	 */
 	private function is_profile($json, $all_attributes = true): bool {
 		foreach ($json as $key => $value) {
-			if (($key == 'userid' && is_numeric($value)) ||
-				($key == 'login' && is_string($value)) ||
-				($key == 'password' && is_string($value))) {
-				continue;
-			}
-			else {
-				return false;
-			}
-		}
-		if ($all_attributes) {
-			return count($json) == 3;
-		}
-		return true;
-	}
-
-	/*
-	 * User registration
-	 */
-	/**
-	 * @throws Exception
-	 */
-	public function login(): array {
-		$request = (array) json_decode(file_get_contents('php://input'));
-		if (empty($request) || !self::is_profile($request, true)) {
-			throw new Exception(400);
-		}
-		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('INSERT INTO profile (userid, login, password) VALUES (?, ?, MD5(?))');
-		$stmt->bind_param('iss', $request['userid'], $request['login'], $request['password']);
-		if (!$stmt->execute()) {
-			throw new Exception(500);
-		}
-		return array(
-			'success' => 'true'
-		);
-	}
-
-	/*
-	 * Checking if json is profile
-	 * Field all_attributes is boolean
-	 * If all_attributes is true, json must have all profile attributes, else some attributes may be skipped
-	 */
-	/**
-	 * @throws exception
-	 */
-	private function is_login_password($json, $all_attributes = true): bool {
-		foreach ($json as $key => $value) {
 			if (($key == 'login' && is_string($value)) ||
 				($key == 'password' && is_string($value))) {
 				continue;
@@ -215,6 +185,34 @@ class Model_User extends Model {
 	}
 
 	/*
+	 * User registration
+	 */
+	/**
+	 * @throws Exception
+	 */
+	public function login($index): array {
+		$request = (array) json_decode(file_get_contents('php://input'));
+		if (empty($request) || !self::is_profile($request, true)) {
+			throw new Exception(400);
+		}
+		$mysqli = Session::get_sql_connection();
+		$stmt = $mysqli->prepare('INSERT INTO profile (userid, login, password) VALUES (?, ?, MD5(?))');
+		$stmt->bind_param('iss', $index, $request['login'], $request['password']);
+		if (!$stmt->execute()) {
+			return array(
+				'success' => 'false',
+				'error' => array(
+					'code' => 200,
+					'message' => 'This login already exists'
+				)
+			);
+		}
+		return array(
+			'success' => 'true'
+		);
+	}
+
+	/*
 	 * User authorisation
 	 */
 	/**
@@ -222,7 +220,7 @@ class Model_User extends Model {
 	 */
 	public function signin():array {
 		$request = (array) json_decode(file_get_contents('php://input'));
-		if (empty($request) || !self::is_login_password($request, true)) {
+		if (empty($request) || !self::is_profile($request, true)) {
 			throw new Exception(400);
 		}
 		$mysqli = Session::get_sql_connection();
@@ -238,15 +236,19 @@ class Model_User extends Model {
 				unset($_SESSION['userid']);
 			}
 			$_SESSION['userid'] = $userid;
-			$message = 'Succesful signin';
+			return array(
+				'success' => 'true'
+			);
 		}
-		else $message = 'Wrong login or password';
-		return array(
-			'success' => 'true',
-			'data' => array(
-				'message' => $message
-			)
-		);
+		else {
+			return array(
+				'success' => 'false',
+				'error' => array(
+					'code' => 200,
+					'message' => 'Wrong login or password'
+				)
+			);
+		}
 	}
 
 	/*
@@ -257,6 +259,9 @@ class Model_User extends Model {
 		if (isset($_SESSION) && array_key_exists('userid', $_SESSION)) {
 			unset($_SESSION['userid']);
 		}
+		return array(
+			'success' => 'true'
+		);
 	}
 
 }
