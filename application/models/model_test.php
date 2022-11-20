@@ -83,7 +83,13 @@ class Model_Test extends Model {
 		$stmt = $mysqli->prepare('INSERT INTO test (`name`, courseid, `number`) VALUES (?, ?, ?)');
 		$stmt->bind_param('sii', $request['name'], $request['courseid'], $request['number']);
 		if (!$stmt->execute()) {
-			throw new Exception(500);
+			return array(
+				'success' => 'false',
+				'error' => array(
+					'code' => 200,
+					'message' => 'Wrong courseid'
+				)
+			);
 		}
 		return array(
 			'success' => 'true'
