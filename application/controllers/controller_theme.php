@@ -1,9 +1,9 @@
 <?php
 
-class Controller_Test extends Controller {
+class Controller_Theme extends Controller {
 
 	function __construct() {
-		$this->model = new Model_Test();
+		$this->model = new Model_Theme();
 		$this->view = new View();
 	}
 
@@ -14,16 +14,16 @@ class Controller_Test extends Controller {
 		Api::auth();
 		if ($index == null) {
 			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'get' => $this->model->get_test(),
-				'post' => $this->model->post_test(),
+				'get' => $this->model->get_theme(),
+				'post' => $this->model->post_theme(),
 				default => throw new Exception(405)
 			};
 		}
 		else {
 			$data = match (strtolower($_SERVER["REQUEST_METHOD"])) {
-				'get' => $this->model->get_test_index($index),
-				'put' => $this->model->put_test_index($index),
-				'delete' => $this->model->delete_test_index($index),
+				'get' => $this->model->get_theme_index($index),
+				'put' => $this->model->put_theme_index($index),
+				'delete' => $this->model->delete_theme_index($index),
 				default => throw new Exception(405)
 			};
 		}

@@ -1,19 +1,19 @@
 <?php
 
-class Model_Test extends Model {
+class Model_Theme extends Model {
 
 	/*
-	 * Find all tests
+	 * Find all themes
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function get_test(): array {
+	public function get_theme(): array {
 		$mysqli = Session::get_sql_connection();
-		$tests = $mysqli->query('SELECT * FROM test');
+		$themes = $mysqli->query('SELECT * FROM theme');
 		$response = array();
-		while ($test = $tests->fetch_assoc()) {
-			$response[] = $test;
+		while ($theme = $themes->fetch_assoc()) {
+			$response[] = $themes;
 		}
 		return array(
 			'success' => 'true',
@@ -22,20 +22,20 @@ class Model_Test extends Model {
 	}
 
 	/*
-	 * Find test by testid
+	 * Find theme by themeid
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function get_test_index($index): array {
+	public function get_theme_index($index): array {
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('SELECT * FROM test WHERE testid = ?');
+		$stmt = $mysqli->prepare('SELECT * FROM theme WHERE themeid = ?');
 		$stmt->bind_param('i', $index);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
 		}
-		$test = $stmt->get_result();
-		$response = $test->fetch_assoc();
+		$theme = $stmt->get_result();
+		$response = $theme->fetch_assoc();
 		return array(
 			'success' => 'true',
 			'data' => $response
@@ -43,14 +43,14 @@ class Model_Test extends Model {
 	}
 
 	/*
-	 * Checking if json is test
+	 * Checking if json is theme
 	 * Field all_attributes is boolean
-	 * If all_attributes is true, json must have all test attributes, else some attributes may be skipped
+	 * If all_attributes is true, json must have all theme attributes, else some attributes may be skipped
 	 */
 	/**
 	 * @throws exception
 	 */
-	private function is_test($json, $all_attributes = true): bool {
+	private function is_theme($json, $all_attributes = true): bool {
 		$name_pattern = '/^[a-zA-Zа-яА-Я0-9 \.,-]+$/u';
 		foreach ($json as $key => $value) {
 			if (($key == 'name' && preg_match($name_pattern, $value)) ||
@@ -69,18 +69,18 @@ class Model_Test extends Model {
 	}
 
 	/*
-	 * Create new test
+	 * Create new theme
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function post_test(): array {
+	public function post_theme(): array {
 		$request = (array) json_decode(file_get_contents('php://input'));
-		if (empty($request) || !self::is_test($request, true)) {
+		if (empty($request) || !self::is_theme($request, true)) {
 			throw new Exception(400);
 		}
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('INSERT INTO test (`name`, courseid, `number`) VALUES (?, ?, ?)');
+		$stmt = $mysqli->prepare('INSERT INTO theme (`name`, courseid, `number`) VALUES (?, ?, ?)');
 		$stmt->bind_param('sii', $request['name'], $request['courseid'], $request['number']);
 		if (!$stmt->execute()) {
 			return array(
@@ -97,14 +97,14 @@ class Model_Test extends Model {
 	}
 
 	/*
-	 * Update test (or some test attributes) by testid
+	 * Update theme (or some theme attributes) by themeid
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function put_test_index($index): array {
+	public function put_theme_index($index): array {
 		$request = (array) json_decode(file_get_contents('php://input'));
-		if (empty($request) || !self::is_test($request, false)) {
+		if (empty($request) || !self::is_theme($request, false)) {
 			throw new Exception(400);
 		}
 		if (!is_numeric($index)) {
@@ -114,7 +114,7 @@ class Model_Test extends Model {
 		foreach ($request as $key => $value) {
 			$attributes[] = '`' . $key . '` = "' . $value . '"';
 		}
-		$query = 'UPDATE test SET ' . implode(', ', $attributes) . ' WHERE testid = ' . $index;
+		$query = 'UPDATE theme SET ' . implode(', ', $attributes) . ' WHERE themeid = ' . $index;
 		$mysqli = Session::get_sql_connection();
 		if (!$mysqli->query($query)) {
 			throw new Exception(500);
@@ -125,14 +125,14 @@ class Model_Test extends Model {
 	}
 
 	/*
-	 * Delete test by testid
+	 * Delete theme by themeid
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function delete_test_index($index): array {
+	public function delete_theme_index($index): array {
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('DELETE FROM test WHERE testid = ?');
+		$stmt = $mysqli->prepare('DELETE FROM theme WHERE themeid = ?');
 		$stmt->bind_param('i', $index);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
@@ -143,22 +143,22 @@ class Model_Test extends Model {
 	}
 
 	/*
-	 * Generate answers for question by testid and seed
+	 * Generate answers for question by themeid and seed
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function generate($testid, $seed) {
+	public function generate($themeid, $seed) {
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('SELECT courseid, `name`, `number` FROM test WHERE testid = ?');
-		$stmt->bind_param('i', $testid);
+		$stmt = $mysqli->prepare('SELECT courseid, `name`, `number` FROM theme WHERE themeid = ?');
+		$stmt->bind_param('i', $themeid);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
 		}
-		$test = $stmt->get_result()->fetch_assoc();
+		$theme = $stmt->get_result()->fetch_assoc();
 		$stmt = $mysqli->prepare('SELECT questionid, `name`, content, `type` FROM question 
-										WHERE testid = ? ORDER BY RAND(?) LIMIT ?');
-		$stmt->bind_param('iii',$testid, $seed, $test['number']);
+										WHERE themeid = ? ORDER BY RAND(?) LIMIT ?');
+		$stmt->bind_param('iii',$themeid, $seed, $theme['number']);
 		if (!$stmt->execute()) {
 			throw new Exception(500);
 		}
@@ -173,21 +173,21 @@ class Model_Test extends Model {
 		return array(
 			'success' => 'true',
 			'data' => array(
-				'name' => $test['name'],
-				'courseid' => $test['courseid'],
-				'number' => $test['number'],
+				'name' => $theme['name'],
+				'courseid' => $theme['courseid'],
+				'number' => $theme['number'],
 				'questions' => $questions
 			)
 		);
 	}
 
 	/*
-	 * Check answers for questions in test by testid and seed
+	 * Check answers for questions in theme by themeid and seed
 	 */
 	/**
 	 * @throws Exception
 	 */
-	public function check($testid, $seed = null) {
+	public function check($themeid, $seed = null) {
 		$questions = (array) json_decode(file_get_contents('php://input'));
 		if (empty($questions)) {
 			throw new Exception(400);
@@ -213,13 +213,13 @@ class Model_Test extends Model {
 		foreach ($questions as $question) {
 			$question = (array) $question;
 			$mysqli = Session::get_sql_connection();
-			$stmt = $mysqli->prepare('SELECT testid FROM question WHERE questionid = ?');
+			$stmt = $mysqli->prepare('SELECT themeid FROM question WHERE questionid = ?');
 			$stmt->bind_param('i', $question['questionid']);
 			if (!$stmt->execute()) {
 				throw new Exception(500);
 			}
-			$question_testid = $stmt->get_result()->fetch_assoc()['testid'];
-			if ($question_testid == $testid) {
+			$question_themeid = $stmt->get_result()->fetch_assoc()['themeid'];
+			if ($question_themeid == $themeid) {
 				$model = new Model_Question();
 				$score += $model->check($question['questionid'], $seed, $question['answers'])['data']['score'];
 			}

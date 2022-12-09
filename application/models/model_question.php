@@ -61,7 +61,7 @@ class Model_Question extends Model {
 		$name_pattern = '/^[a-zA-Zа-яА-Я0-9 \.,-]+$/u';
 		foreach ($json as $key => $value) {
 			if (($key == 'name' && preg_match($name_pattern, $value)) ||
-				($key == 'testid' && is_numeric($value)) ||
+				($key == 'themeid' && is_numeric($value)) ||
 				($key == 'content' && preg_match($name_pattern, $value)) ||
 				($key == 'type' && preg_match($type_pattern, $value))) {
 				continue;
@@ -88,11 +88,17 @@ class Model_Question extends Model {
 			throw new Exception(400);
 		}
 		$mysqli = Session::get_sql_connection();
-		$stmt = $mysqli->prepare('INSERT INTO question (name, testid, content, `type`) VALUES (?, ?, ?, ?)');
+		$stmt = $mysqli->prepare('INSERT INTO question (name, themeid, content, `type`) VALUES (?, ?, ?, ?)');
 		$stmt->bind_param('siss',
-			$request['name'], $request['testid'], $request['content'], $request['type']);
+			$request['name'], $request['themeid'], $request['content'], $request['type']);
 		if (!$stmt->execute()) {
-			throw new Exception(500);
+			return array(
+				'success' => 'false',
+				'error' => array(
+					'code' => 200,
+					'message' => 'Wrong themeid or type'
+				)
+			);
 		}
 		return array(
 			'success' => 'true'
@@ -120,7 +126,13 @@ class Model_Question extends Model {
 		$query = 'UPDATE question SET ' . implode(', ', $attributes) . ' WHERE questionid = ' . $index;
 		$mysqli = Session::get_sql_connection();
 		if (!$mysqli->query($query)) {
-			throw new Exception(500);
+			return array(
+				'success' => 'false',
+				'error' => array(
+					'code' => 200,
+					'message' => 'Wrong themeid or type'
+				)
+			);
 		}
 		return array(
 			'success' => 'true'
